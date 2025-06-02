@@ -6,6 +6,7 @@ import ProductsPage from './pages/productsPage.jsx'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import InicioPage from './pages/inicioPage.jsx';
 import CartPage from './pages/cartPage.jsx';
+import Consultas from './pages/consultasPages.jsx';
 
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
           <Route path="/" element={<InicioPage />} />
           <Route path="/products/:categoryId/:subcategoryId" element={<ProductsPage addToCart={addToCart} />} />
           <Route path="/carrito/" element={<CartPage cart={cart} removeFromCart={removeFromCart} />} />
+          <Route path="/consultas" element={< Consultas/>} />
         </Routes>
       </Router>
     </>

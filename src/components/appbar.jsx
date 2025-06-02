@@ -11,15 +11,18 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
 import { Link } from 'react-router-dom';
 import Icon from '@mdi/react';
 import { mdiCartVariant, mdiHammerWrench } from '@mdi/js';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 
-const pages = ['Pricing', 'Blog'];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const pages = [
+    { label: 'Consultas', path: '/consultas' },
+    { label: 'Otra', path: '/otra' }
+];
+const settings = ['Perfil', 'Cuenta', 'Dashboard', 'Cerrar sesión'];
 
 function ResponsiveAppBar(props) {
     const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -27,6 +30,8 @@ function ResponsiveAppBar(props) {
 
     // Estado para el dólar
     const [dolar, setDolar] = useState({ value: null, date: null });
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetch('http://34.204.114.72:8080/api/divisas/dolar')
@@ -115,8 +120,14 @@ function ResponsiveAppBar(props) {
                                 <Typography sx={{ textAlign: 'center' }}>Categorias</Typography>
                             </MenuItem>
                             {pages.map((page) => (
-                                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                                    <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
+                                <MenuItem
+                                    key={page.label}
+                                    onClick={() => {
+                                        navigate(page.path);
+                                        handleCloseNavMenu();
+                                    }}
+                                >
+                                    <Typography sx={{ textAlign: 'center' }}>{page.label}</Typography>
                                 </MenuItem>
                             ))}
                         </Menu>
@@ -147,13 +158,14 @@ function ResponsiveAppBar(props) {
                         >
                             Categorias
                         </Button>
+
                         {pages.map((page) => (
                             <Button
-                                key={page}
-                                onClick={handleCloseNavMenu}
+                                key={page.label}
+                                onClick={() => navigate(page.path)}
                                 sx={{ my: 2, color: 'white', display: 'block' }}
                             >
-                                {page}
+                                {page.label}
                             </Button>
                         ))}
                     </Box>
