@@ -12,6 +12,8 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
+import Icon from '@mdi/react';
+import { mdiCartVariant, mdiHammerWrench } from '@mdi/js';
 
 const pages = ['Pricing', 'Blog'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -39,8 +41,6 @@ function ResponsiveAppBar(props) {
         <AppBar position="static">
             <Container maxWidth="xl">
                 <Toolbar disableGutters>
-                    <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
-
                     <Typography
                         variant="h6"
                         noWrap
@@ -56,6 +56,7 @@ function ResponsiveAppBar(props) {
                             textDecoration: 'none',
                         }}
                     >
+                        <Icon path={mdiHammerWrench} size={1}  />
                         FERREMAS
                     </Typography>
 
@@ -102,7 +103,6 @@ function ResponsiveAppBar(props) {
                             ))}
                         </Menu>
                     </Box>
-                    <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
                     <Typography
                         variant="h5"
                         noWrap
@@ -119,11 +119,12 @@ function ResponsiveAppBar(props) {
                             textDecoration: 'none',
                         }}
                     >
+                        <Icon path={mdiHammerWrench} size={1} sx={{mr:1}} />
                         FERREMAS
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
 
-                        <Button onClick={props.onCategoryClick }
+                        <Button onClick={props.onCategoryClick}
                             sx={{ my: 2, color: 'white', display: 'block' }}
                         >
                             Categorias
@@ -137,6 +138,17 @@ function ResponsiveAppBar(props) {
                                 {page}
                             </Button>
                         ))}
+                    </Box>
+                    <Box sx={{ flexGrow: 0 }}
+                        component="a"
+                        href="/carrito/"
+                    >
+                            <Icon
+                                path={mdiCartVariant}
+                                title="Carrito de compras"
+                                size={1.5}
+                                color="white"
+                            />
                     </Box>
                     <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title="Open settings">

@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid';
-import IntroDivider from '../components/products.jsx';
+import ProductCard from '../components/products.jsx';
 
 export default function ProductsPage() {
   const { categoryId, subcategoryId } = useParams();
@@ -24,7 +24,7 @@ export default function ProductsPage() {
     <Grid container columns={12} spacing={2} sx={{ p: 2 }}>
       {products.map((product) => (
         <Grid key={product.id} sx={{ gridColumn: { xs: 'span 12', sm: 'span 6', md: 'span 4' } }}>
-          <IntroDivider {...product} />
+          <ProductCard {...product} />
         </Grid>
       ))}
     </Grid>

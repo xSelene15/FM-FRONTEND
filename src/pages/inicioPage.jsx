@@ -1,8 +1,9 @@
 import React from 'react';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import TitlebarBelowImageList from '../components/listoffers.jsx';
+import ImgListOffer from '../components/listoffers.jsx';
 import TitlebarBelowMasonryImageList from '../components/listnew.jsx';
+import ImgListNew from '../components/listnew.jsx';
 
 export default function InicioPage() {
   return (
@@ -15,13 +16,13 @@ export default function InicioPage() {
           <Typography variant="h5" component="h2" sx={{ mb: 2 }}>
             Ofertas Especiales
           </Typography>
-          <TitlebarBelowImageList />
+          <ImgListOffer />
         </Grid>
         <Grid sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
           <Typography variant="h5" component="h2" sx={{ mb: 2 }}>
             Nuevos Productos
           </Typography>
-          <TitlebarBelowMasonryImageList />
+          <ImgListNew />
         </Grid>
       </Grid>
     </>

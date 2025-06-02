@@ -3,7 +3,7 @@ import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
 
-export default function TitlebarBelowImageList() {
+export default function ImgListOffer() {
   return (
     <ImageList sx={{ width: 500, height: 450 }}>
       {itemData.map((item) => (
