@@ -15,6 +15,8 @@ import AdbIcon from '@mui/icons-material/Adb';
 import { Link } from 'react-router-dom';
 import Icon from '@mdi/react';
 import { mdiCartVariant, mdiHammerWrench } from '@mdi/js';
+import { useEffect, useState } from 'react';
+
 
 const pages = ['Pricing', 'Blog'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -22,6 +24,21 @@ const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 function ResponsiveAppBar(props) {
     const [anchorElNav, setAnchorElNav] = React.useState(null);
     const [anchorElUser, setAnchorElUser] = React.useState(null);
+
+    // Estado para el dólar
+    const [dolar, setDolar] = useState({ value: null, date: null });
+
+    useEffect(() => {
+        fetch('http://34.204.114.72:8080/api/divisas/dolar')
+            .then(res => res.json())
+            .then(data => {
+                const obs = data?.Series?.Obs?.[0];
+                if (obs) {
+                    setDolar({ value: obs.value, date: obs.indexDateString });
+                }
+            })
+            .catch(() => setDolar({ value: null, date: null }));
+    }, []);
 
     const handleOpenNavMenu = (event) => {
         setAnchorElNav(event.currentTarget);
@@ -140,14 +157,19 @@ function ResponsiveAppBar(props) {
                             </Button>
                         ))}
                     </Box>
-                    <Link to="/carrito/ ">
+                    {/* Dólar a la izquierda del carrito */}
+                    {dolar.value && dolar.date && (
+                        <Typography sx={{ color: 'white', mr: 3 }}>
+                            Precio Dólar al día {dolar.date}: ${dolar.value}
+                        </Typography>
+                    )}
+                    <Link to="/carrito/">
                         <Icon
                             path={mdiCartVariant}
                             title="Carrito de compras"
                             size={1.5}
                             color="white"
-                        >
-                        </Icon>
+                        />
                     </Link>
 
                     <Box sx={{ flexGrow: 0 }}>

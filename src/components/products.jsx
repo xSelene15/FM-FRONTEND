@@ -27,11 +27,13 @@ export default function ProductCard({ codProducto, nombre, marca, precioActual, 
                     Stock: {stock}
                 </Typography>
             </CardContent>
-            <CardActions>
-                <Button onClick={() => addToCart({ codProducto, nombre, marca, precioActual, descripcion, stock })}>
-                    Add to Cart
-                </Button>
-            </CardActions>
+            {addToCart && (
+                <CardActions>
+                    <Button onClick={() => addToCart({ codProducto, nombre, marca, precioActual, descripcion, stock })}>
+                        Agregar al carrito
+                    </Button>
+                </CardActions>
+            )}
         </Card>
     );
 }
