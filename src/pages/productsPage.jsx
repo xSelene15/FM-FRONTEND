@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid';
 import ProductCard from '../components/products.jsx';
 
-export default function ProductsPage() {
+export default function ProductsPage({ addToCart }) {
   const { categoryId, subcategoryId } = useParams();
   const [products, setProducts] = useState([]);
 
@@ -24,7 +24,7 @@ export default function ProductsPage() {
     <Grid container columns={12} spacing={2} sx={{ p: 2 }}>
       {products.map((product) => (
         <Grid key={product.id} sx={{ gridColumn: { xs: 'span 12', sm: 'span 6', md: 'span 4' } }}>
-          <ProductCard {...product} />
+          <ProductCard {...product} addToCart={addToCart} />
         </Grid>
       ))}
     </Grid>

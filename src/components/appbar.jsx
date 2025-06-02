@@ -12,6 +12,7 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
+import { Link } from 'react-router-dom';
 import Icon from '@mdi/react';
 import { mdiCartVariant, mdiHammerWrench } from '@mdi/js';
 
@@ -56,7 +57,7 @@ function ResponsiveAppBar(props) {
                             textDecoration: 'none',
                         }}
                     >
-                        <Icon path={mdiHammerWrench} size={1}  />
+                        <Icon path={mdiHammerWrench} size={1} />
                         FERREMAS
                     </Typography>
 
@@ -119,7 +120,7 @@ function ResponsiveAppBar(props) {
                             textDecoration: 'none',
                         }}
                     >
-                        <Icon path={mdiHammerWrench} size={1} sx={{mr:1}} />
+                        <Icon path={mdiHammerWrench} size={1} sx={{ mr: 1 }} />
                         FERREMAS
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
@@ -139,17 +140,16 @@ function ResponsiveAppBar(props) {
                             </Button>
                         ))}
                     </Box>
-                    <Box sx={{ flexGrow: 0 }}
-                        component="a"
-                        href="/carrito/"
-                    >
-                            <Icon
-                                path={mdiCartVariant}
-                                title="Carrito de compras"
-                                size={1.5}
-                                color="white"
-                            />
-                    </Box>
+                    <Link to="/carrito/ ">
+                        <Icon
+                            path={mdiCartVariant}
+                            title="Carrito de compras"
+                            size={1.5}
+                            color="white"
+                        >
+                        </Icon>
+                    </Link>
+
                     <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title="Open settings">
                             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>

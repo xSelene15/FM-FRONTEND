@@ -1,10 +1,10 @@
 import React from 'react';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
-import { CardContent, CardActions, Button} from '@mui/material';
+import { CardContent, CardActions, Button } from '@mui/material';
 
 
-export default function ProductCard({ codProducto, nombre, marca, precioActual, descripcion, stock}) {
+export default function ProductCard({ codProducto, nombre, marca, precioActual, descripcion, stock, addToCart }) {
     return (
         <Card sx={{ maxWidth: 345 }}>
             <CardContent sx={{ p: 2 }}>
@@ -13,9 +13,9 @@ export default function ProductCard({ codProducto, nombre, marca, precioActual, 
                 </Typography>
                 <Typography variant="subtitle1" color="text.secondary">
                     {marca}
-                <Typography gutterBottom variant="h4" component="div">
-                    {nombre}
-                </Typography>                
+                    <Typography gutterBottom variant="h4" component="div">
+                        {nombre}
+                    </Typography>
                 </Typography>
                 <Typography gutterBottom variant="h6" component="div">
                     ${precioActual}
@@ -26,11 +26,13 @@ export default function ProductCard({ codProducto, nombre, marca, precioActual, 
                 <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
                     Stock: {stock}
                 </Typography>
-
             </CardContent>
             <CardActions>
-                <Button onClick={() => addToCart(product)}>Add to Cart</Button>
+                <Button onClick={() => addToCart({ codProducto, nombre, marca, precioActual, descripcion, stock })}>
+                    Add to Cart
+                </Button>
             </CardActions>
         </Card>
     );
 }
+
