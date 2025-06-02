@@ -3,7 +3,7 @@ import './App.css'
 import ResponsiveAppBar from './components/appbar.jsx';
 import TitlebarBelowImageList from './components/listoffers.jsx';
 import TitlebarBelowMasonryImageList from './components/listnew.jsx';
-import VirtualizedList from './components/listCategories.jsx';
+import CategoriesList from './components/categories.jsx';
 
 function App() {
   const [showCategoryList, setShowCategoryList] = useState(false);
@@ -11,7 +11,7 @@ function App() {
     <>
       <ResponsiveAppBar onCategoryClick={() => setShowCategoryList(true)} />
       {showCategoryList && (
-        <VirtualizedList handleCloseNavMenu={() => setShowCategoryList(false)} />
+        <CategoriesList handleCloseListMenu={() => setShowCategoryList(false)} />
       )}
       <TitlebarBelowImageList />
       <TitlebarBelowMasonryImageList />

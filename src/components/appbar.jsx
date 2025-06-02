@@ -85,11 +85,15 @@ function ResponsiveAppBar(props) {
                             onClose={handleCloseNavMenu}
                             sx={{ display: { xs: 'block', md: 'none' } }}
                         >
-                            <Button onClick={props.onCategoryClick}
-                                sx={{textAlign: 'center' }}
+                            <MenuItem
+                                onClick={() => {
+                                    props.onCategoryClick();
+                                    handleCloseNavMenu();
+                                }}
+                                sx={{ textAlign: 'center' }}
                             >
-                                Categorias
-                            </Button>
+                                <Typography sx={{ textAlign: 'center' }}>Categorias</Typography>
+                            </MenuItem>
                             {pages.map((page) => (
                                 <MenuItem key={page} onClick={handleCloseNavMenu}>
                                     <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
@@ -118,7 +122,7 @@ function ResponsiveAppBar(props) {
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
 
-                        <Button onClick={props.onCategoryClick}
+                        <Button onClick={props.onCategoryClick }
                             sx={{ my: 2, color: 'white', display: 'block' }}
                         >
                             Categorias
