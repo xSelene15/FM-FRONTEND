@@ -19,8 +19,12 @@ import { useNavigate } from 'react-router-dom';
 
 
 const pages = [
+    // { label: 'Categorias', path: '/categorias' },
     { label: 'Consultas', path: '/consultas' },
-    { label: 'Otra', path: '/otra' }
+    { label: 'Registro', path: '/registro' },
+    { label: 'Iniciar sesión', path: '/login' },
+    { label: 'Dashboard', path: '/dashboard' } // Asegúrate de que esta ruta esté definida en tu router
+
 ];
 const settings = ['Perfil', 'Cuenta', 'Dashboard', 'Cerrar sesión'];
 

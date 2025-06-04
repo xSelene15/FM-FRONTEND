@@ -2,7 +2,6 @@ import React from 'react';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import ImgListOffer from '../components/listoffers.jsx';
-import TitlebarBelowMasonryImageList from '../components/listnew.jsx';
 import ImgListNew from '../components/listnew.jsx';
 
 export default function InicioPage() {
