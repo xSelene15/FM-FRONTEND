@@ -1,4 +1,4 @@
-import { useState , useEffect} from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import ResponsiveAppBar from './components/appbar.jsx';
 import CategoriesList from './components/categories.jsx';
@@ -9,7 +9,8 @@ import ConsultasPage from './pages/consultasPage.jsx';
 import RegistroPage from './pages/registrationPage.jsx';
 import ProductsPage from './pages/productsPage.jsx'
 import LoginPage from './pages/loginPage.jsx';
-import Layout from './(dashboard)/layouts/dashboard.jsx';
+import DashboardPage from './pages/dashboardPage.jsx';
+
 
 function App() {
   const [showCategoryList, setShowCategoryList] = useState(false);
@@ -31,6 +32,7 @@ function App() {
     setCart((prevCart) => prevCart.filter(item => item.codProducto !== codProducto));
   };
 
+
   return (
     <>
       <Router>
@@ -43,10 +45,10 @@ function App() {
           <Route path="/" element={<InicioPage />} />
           <Route path="/products/:categoryId/:subcategoryId" element={<ProductsPage addToCart={addToCart} />} />
           <Route path="/carrito/" element={<CartPage cart={cart} removeFromCart={removeFromCart} />} />
-          <Route path="/consultas/" element={<ConsultasPage/>} />
+          <Route path="/consultas/" element={<ConsultasPage />} />
           <Route path="/registro/" element={<RegistroPage />} />
           <Route path="/login/" element={<LoginPage />} />
-          <Route path="/dashboard/" element={<Layout />}/>
+          <Route path="/dashboard/*" element={<DashboardPage />} />
         </Routes>
       </Router>
     </>

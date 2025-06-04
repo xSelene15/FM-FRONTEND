@@ -26,6 +26,7 @@ const pages = [
     { label: 'Dashboard', path: '/dashboard' } // Asegúrate de que esta ruta esté definida en tu router
 
 ];
+
 const settings = ['Perfil', 'Cuenta', 'Dashboard', 'Cerrar sesión'];
 
 function ResponsiveAppBar(props) {
@@ -65,7 +66,7 @@ function ResponsiveAppBar(props) {
     };
 
     return (
-        <AppBar position="static">
+        <AppBar position="fixed">
             <Container maxWidth="xl">
                 <Toolbar disableGutters>
                     <Typography

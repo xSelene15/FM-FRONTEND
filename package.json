@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:dashboard": "vite --config src/(dashboard)/vite.config.js",
     "build": "vite build",
+    "build:dashboard": "vite build --config src/(dashboard)/vite.config.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -15,7 +17,7 @@
     "@fontsource/roboto": "^5.2.5",
     "@mdi/js": "^7.4.47",
     "@mdi/react": "^1.6.1",
-    "@mui/icons-material": "^7.1.1",
+    "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.1",
     "@toolpad/core": "^0.15.0",
     "@vitejs/plugin-react-swc": "^3.10.0",
