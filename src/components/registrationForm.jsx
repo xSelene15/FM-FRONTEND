@@ -50,6 +50,9 @@ const RegistrationForm = () => {
   };
 
   return (
+
+
+
     <form onSubmit={handleSubmit}>
       <div>
         <label>First Name:</label>

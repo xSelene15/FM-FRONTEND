@@ -1,26 +1,102 @@
 import React, { useState, useEffect } from 'react';
-import ProductCard from '../components/products.jsx';
-import Grid from '@mui/material/Grid';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 
-export default function CartPage({ cart, removeFromCart }) {
-  const total = cart.reduce((sum, item) => sum + Number(item.precioActual), 0);
+export default function CartPage({ cart, setCart, removeFromCart }) {
+  const total = cart.reduce((sum, item) => sum + Number(item.precioActual) * (item.cantidad || 1), 0);
   const [webpayData, setWebpayData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  // Función para descontar stock en la API
+  const descontarStockAPI = async () => {
+    try {
+      // Por cada producto en el carrito, envía una petición para descontar el stock
+      for (const product of cart) {
+        await fetch(`http://http://34.204.114.72:8080//productos/${product.codProducto}/descontar-stock`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stock: product.stock - (product.cantidad || 1) })
+        });
+      }
+    } catch (error) {
+      // Puedes mostrar un mensaje de error si lo deseas
+      console.error('Error al descontar stock:', error);
+    }
+  };
 
   // Detectar retorno de WebPay
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('token_ws')) {
       setShowSuccess(true);
+      descontarStockAPI(); // Descontar stock al pagar
       // Aquí podrías limpiar el carrito si quieres
       // localStorage.removeItem('cart');
-      // window.history.replaceState({}, document.title, "/carrito/");
+      // setCart([]);
     }
+  }, [setCart]);
+
+  // Unifica productos con el mismo codProducto sumando cantidades
+  useEffect(() => {
+    const uniqueCart = [];
+    cart.forEach(item => {
+      const found = uniqueCart.find(i => i.codProducto === item.codProducto);
+      if (found) {
+        found.cantidad += item.cantidad || 1;
+      } else {
+        uniqueCart.push({ ...item });
+      }
+    });
+    if (uniqueCart.length !== cart.length) {
+      setCart(uniqueCart);
+    }
+    // eslint-disable-next-line
   }, []);
 
+  // Aumentar cantidad
+  const handleIncrease = (codProducto) => {
+    setCart(prevCart =>
+      prevCart.map(item =>
+        item.codProducto === codProducto && item.cantidad < item.stock
+          ? { ...item, cantidad: item.cantidad + 1 }
+          : item
+      )
+    );
+  };
+
+  // Disminuir cantidad
+  const handleDecrease = (codProducto) => {
+    setCart(prevCart =>
+      prevCart
+        .map(item =>
+          item.codProducto === codProducto
+            ? { ...item, cantidad: item.cantidad - 1 }
+            : item
+        )
+        .filter(item => item.cantidad > 0)
+    );
+  };
+
+  // Agregar al carrito
+  const addToCart = (product) => {
+    setCart(prevCart => {
+      const found = prevCart.find(item => item.codProducto === product.codProducto);
+      if (found) {
+        return prevCart.map(item =>
+          item.codProducto === product.codProducto
+            ? { ...item, cantidad: item.cantidad + 1 }
+            : item
+        );
+      }
+      return [...prevCart, { ...product, cantidad: 1 }];
+    });
+  };
+
+  // Pago WebPay
   const handleWebPay = () => {
     setLoading(true);
     fetch('http://34.204.114.72:8080/webpay', {
@@ -68,27 +144,62 @@ export default function CartPage({ cart, removeFromCart }) {
           ¡Pago realizado con éxito!
         </Box>
       )}
-      <Grid container columns={12} spacing={2} sx={{ p: 2 }}>
+      <List>
         {cart.length === 0 ? (
-          <Grid item xs={12}>
-            <p>El carrito está vacío.</p>
-          </Grid>
+          <ListItem>
+            <ListItemText primary="El carrito está vacío." />
+          </ListItem>
         ) : (
           cart.map((product, idx) => (
-            <Grid key={idx} sx={{ gridColumn: { xs: 'span 12', sm: 'span 6', md: 'span 4' } }}>
-              <ProductCard {...product} addToCart={null} />
-              <Button
-                variant="contained"
-                color="error"
-                sx={{ mt: 1 }}
-                onClick={() => removeFromCart(product.codProducto)}
-              >
-                Quitar del carrito
-              </Button>
-            </Grid>
+            <ListItem
+              key={product.codProducto || idx}
+              secondaryAction={
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => removeFromCart(product.codProducto)}
+                >
+                  Quitar
+                </Button>
+              }
+              sx={{ borderBottom: '1px solid #eee' }}
+            >
+              <img
+                src={product.imagenUrl}
+                alt={product.nombre}
+                style={{ width: 50, height: 50, objectFit: 'cover', marginRight: 16 }}
+              />
+              <ListItemText
+                primary={product.nombre}
+                secondary={
+                  <span>
+                    Precio: ${product.precioActual} | Marca: {product.marca}
+                    <br />
+                    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleDecrease(product.codProducto)}
+                        disabled={product.cantidad <= 1}
+                      >-</Button>
+                      <span style={{ minWidth: 30, textAlign: 'center' }}>{product.cantidad || 1}</span>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleIncrease(product.codProducto)}
+                        disabled={product.cantidad >= product.stock}
+                      >+</Button>
+                      <span style={{ marginLeft: 8, color: '#888' }}>
+                        Stock: {product.stock - (product.cantidad || 1)}
+                      </span>
+                    </Box>
+                  </span>
+                }
+              />
+            </ListItem>
           ))
         )}
-      </Grid>
+      </List>
       <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
         <input
           type="text"

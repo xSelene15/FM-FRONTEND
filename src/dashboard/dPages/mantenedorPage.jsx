@@ -112,6 +112,7 @@ export default function MantenedorPage() {
       <table border="1" cellPadding="8">
         <thead>
           <tr>
+            <th>Código Producto</th>
             <th>Nombre</th>
             <th>Descripción</th>
             <th>Marca</th>
@@ -126,6 +127,7 @@ export default function MantenedorPage() {
         <tbody>
           {filteredProductos.map((p) => (
             <tr key={p.id}>
+              <td>{p.codProducto}</td>
               <td>{p.nombre}</td>
               <td>{p.descripcion}</td>
               <td>{p.marca}</td>
