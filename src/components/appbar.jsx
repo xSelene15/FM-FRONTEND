@@ -12,8 +12,8 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import { Link } from 'react-router-dom';
-import Icon from '@mdi/react';
-import { mdiCartVariant, mdiHammerWrench } from '@mdi/js';
+import SquareFootIcon from '@mui/icons-material/SquareFoot';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -84,7 +84,7 @@ function ResponsiveAppBar(props) {
                             textDecoration: 'none',
                         }}
                     >
-                        <Icon path={mdiHammerWrench} size={1} />
+                        <SquareFootIcon sx={{ fontSize: 30 , mr: 2 }}/>
                         FERREMAS
                     </Typography>
 
@@ -148,12 +148,12 @@ function ResponsiveAppBar(props) {
                             flexGrow: 1,
                             fontFamily: 'monospace',
                             fontWeight: 700,
-                            letterSpacing: '.3rem',
                             color: 'inherit',
+                            letterSpacing: '.3rem',
                             textDecoration: 'none',
                         }}
                     >
-                        <Icon path={mdiHammerWrench} size={1} sx={{ mr: 1 }} />
+                        <SquareFootIcon sx={{ fontSize: 30 , mr: 2 }}/>
                         FERREMAS
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
@@ -181,12 +181,7 @@ function ResponsiveAppBar(props) {
                         </Typography>
                     )}
                     <Link to="/carrito/">
-                        <Icon
-                            path={mdiCartVariant}
-                            title="Carrito de compras"
-                            size={1.5}
-                            color="white"
-                        />
+                        <ShoppingCartIcon sx={{ fontSize: 30 , mr: 5 }}/>       
                     </Link>
 
                     <Box sx={{ flexGrow: 0 }}>

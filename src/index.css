@@ -14,8 +14,12 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: white;
   text-decoration: inherit;
+}
+
+a:hover {
+  color: #ffffff87 
 }
 
 body {
@@ -45,13 +49,16 @@ button:hover {
   border-color: #646cff;
 }
 
+.drawer-text {
+  a:hover {
+    color: #1282dd;
+  }
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
     background-color: #ffffff;
-  }
-  a:hover {
-    color: #ffffff87;
   }
   button {
     background-color: #f9f9f9;
