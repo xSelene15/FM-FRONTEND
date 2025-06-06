@@ -3,24 +3,29 @@ import Box from '@mui/material/Box';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
+import Card  from '@mui/material/Card';
+import Typography from '@mui/material/Typography';
 
 export default function ImgListNew() {
   return (
-    <Box sx={{ width: 500, height: 450, overflowY: 'scroll' }}>
-      <ImageList variant="masonry" cols={3} gap={8}>
-        {itemData.map((item) => (
-          <ImageListItem key={item.img}>
-            <img
-              srcSet={`${item.img}?w=248&fit=crop&auto=format&dpr=2 2x`}
-              src={`${item.img}?w=248&fit=crop&auto=format`}
-              alt={item.title}
-              loading="lazy"
-            />
-            <ImageListItemBar position="below" title={item.author} />
-          </ImageListItem>
-        ))}
-      </ImageList>
-    </Box>
+    <Card sx={{ p: 2, mb: 4 }}>
+      <Typography variant="h5" component="h2" sx={{ mb: 2 }}>
+        Nuevos Productos
+      </Typography>
+        <ImageList variant="masonry" cols={3} gap={8}>
+          {itemData.map((item) => (
+            <ImageListItem key={item.img}>
+              <img
+                srcSet={`${item.img}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                src={`${item.img}?w=248&fit=crop&auto=format`}
+                alt={item.title}
+                loading="lazy"
+              />
+              <ImageListItemBar position="below" title={item.author} />
+            </ImageListItem>
+          ))}
+        </ImageList>
+    </Card>
   );
 }
 

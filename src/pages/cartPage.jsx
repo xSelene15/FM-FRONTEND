@@ -137,6 +137,9 @@ export default function CartPage({ cart, setCart, removeFromCart }) {
       });
   };
 
+  // Verifica si hay algún producto con stock 0 en el carrito
+  const hasOutOfStock = cart.some(product => product.stock === 0);
+
   return (
     <Box>
       {showSuccess && (
@@ -187,10 +190,11 @@ export default function CartPage({ cart, setCart, removeFromCart }) {
                         size="small"
                         variant="outlined"
                         onClick={() => handleIncrease(product.codProducto)}
-                        disabled={product.cantidad >= product.stock}
+                        disabled={product.cantidad >= product.stock || product.stock === 0}
                       >+</Button>
-                      <span style={{ marginLeft: 8, color: '#888' }}>
+                      <span style={{ marginLeft: 8, color: product.stock === 0 ? 'red' : '#888' }}>
                         Stock: {product.stock - (product.cantidad || 1)}
+                        {product.stock === 0 && ' (Sin stock)'}
                       </span>
                     </Box>
                   </span>
@@ -212,11 +216,16 @@ export default function CartPage({ cart, setCart, removeFromCart }) {
           color="success"
           sx={{ fontSize: '1.1em', height: '48px' }}
           onClick={handleWebPay}
-          disabled={loading || cart.length === 0}
+          disabled={loading || cart.length === 0 || hasOutOfStock}
         >
           {loading ? 'Redirigiendo...' : 'Pagar con WebPay'}
         </Button>
       </Box>
+      {hasOutOfStock && (
+        <Box sx={{ mt: 2, color: 'error.main', textAlign: 'right' }}>
+          Hay productos sin stock en el carrito. Elimina o ajusta antes de pagar.
+        </Box>
+      )}
       {webpayData && (
         <Box sx={{ mt: 2, color: 'error.main' }}>
           {typeof webpayData === 'string'

@@ -12,14 +12,14 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: white;
-  text-decoration: inherit;
-}
+@keyframes body {
+  0% {
+    background-position: 0 0;
+  }
 
-a:hover {
-  color: #ffffff87 
+  100% {
+    background-position: 100% 0;
+  }
 }
 
 body {
@@ -27,6 +27,18 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background: linear-gradient(135deg, #040b4b 0%, #67aad6 100%);
+}
+
+
+a {
+  font-weight: 500;
+  color: white;
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: #ffffff87
 }
 
 h1 {
@@ -45,6 +57,7 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
@@ -60,6 +73,7 @@ button:hover {
     color: #213547;
     background-color: #ffffff;
   }
+
   button {
     background-color: #f9f9f9;
   }

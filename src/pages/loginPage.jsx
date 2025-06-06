@@ -45,9 +45,9 @@ export default function LoginPage() {
           <Button
             type="submit"
             variant="contained"
-            color="primary"
+            color="success"
             fullWidth
-            sx={{ mt: 2 }}
+            sx={{ py: 1.5, fontSize: '1.1em', mt: 2 }}
           >
             Ingresar
           </Button>

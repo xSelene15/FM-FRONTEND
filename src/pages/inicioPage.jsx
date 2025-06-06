@@ -3,6 +3,7 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import ImgListOffer from '../components/listoffers.jsx';
 import ImgListNew from '../components/listnew.jsx';
+import { Card } from '@mui/material';
 
 export default function InicioPage() {
   return (
@@ -12,15 +13,9 @@ export default function InicioPage() {
       </Typography>
       <Grid container spacing={4} columns={12} sx={{ p: 4 }}>
         <Grid sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
-          <Typography variant="h5" component="h2" sx={{ mb: 2 }}>
-            Ofertas Especiales
-          </Typography>
-          <ImgListOffer />
+            <ImgListOffer />
         </Grid>
         <Grid sx={{ gridColumn: { xs: 'span 12', md: 'span 6' } }}>
-          <Typography variant="h5" component="h2" sx={{ mb: 2 }}>
-            Nuevos Productos
-          </Typography>
           <ImgListNew />
         </Grid>
       </Grid>
