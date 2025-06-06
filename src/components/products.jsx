@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import { CardContent, CardActions, Button, Snackbar, Alert } from '@mui/material';
 
 
-export default function ProductCard({ codProducto, nombre, precioActual, imagenUrl, marca, stock, descripcion, addToCart, onAddToCart }) {
+export default function ProductCard({ codProducto, nombre, precioActual, imagenUrl, marca, stock, descripcion, addToCart, onAddToCart, oferta }) {
   const [open, setOpen] = React.useState(false);
 
   const handleAdd = () => {
