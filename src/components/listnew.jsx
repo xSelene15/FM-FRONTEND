@@ -8,6 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import Fade from '@mui/material/Fade';
+import { useNavigate } from 'react-router-dom';
 
 const CARDS_PER_VIEW = 1; // Solo una card visible
 const AUTO_SCROLL_INTERVAL = 4000; // 4 segundos
@@ -16,6 +17,7 @@ export default function ImgListNew() {
   const [productos, setProductos] = React.useState([]);
   const [startIdx, setStartIdx] = React.useState(0);
   const [fadeIn, setFadeIn] = React.useState(true);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     fetch('http://34.204.114.72:8080/api/productos')
@@ -109,14 +111,25 @@ export default function ImgListNew() {
                 <Card
                   key={item.codProducto || idx}
                   sx={{
-                    width: 300,
-                    height: 270,
+                    width: 400,
+                    height: 400,
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     mx: 1,
                     flexShrink: 0,
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => {
+                    if (item.categoriaId && item.subCategoriaId) {
+                      navigate(`/products/${item.categoriaId}/${item.subCategoriaId}`);
+                    } else if (item.categoriaId) {
+                      navigate(`/products/${item.categoriaId}/0`);
+                    } else {
+                      // Opcional: navega a una ruta por defecto o muestra un error
+                      alert('Este producto no tiene categoría asignada');
+                    }
                   }}
                 >
                   <CardMedia
@@ -124,8 +137,8 @@ export default function ImgListNew() {
                     image={item.imagenUrl}
                     alt={item.nombre}
                     sx={{
-                      width: 180,         // Puedes ajustar este valor según tu diseño
-                      height: 180,        // Puedes ajustar este valor según tu diseño
+                      width: 200,         // Puedes ajustar este valor según tu diseño
+                      height: 200,        // Puedes ajustar este valor según tu diseño
                       objectFit: 'contain', // <-- Esto asegura que la imagen no se corte
                       margin: '16px auto 0 auto',
                       borderRadius: 2,
@@ -138,6 +151,12 @@ export default function ImgListNew() {
                     </Typography>
                     <Typography variant="body2" color="text.secondary" align="center" noWrap>
                       {item.marca}
+                    </Typography>
+                    <Typography variant="h6" component="div" align="center">
+                      ${item.precioActual}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" align="center" noWrap>
+                      {item.descripcion}
                     </Typography>
                   </CardContent>
                 </Card>

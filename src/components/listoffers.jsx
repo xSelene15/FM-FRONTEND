@@ -7,6 +7,7 @@ import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { useNavigate } from 'react-router-dom';
 
 const CARDS_PER_VIEW = 5;
 const AUTO_SCROLL_INTERVAL = 10000; // 10 segundos
@@ -14,6 +15,7 @@ const AUTO_SCROLL_INTERVAL = 10000; // 10 segundos
 export default function ImgListOffer() {
   const [productos, setProductos] = React.useState([]);
   const [startIdx, setStartIdx] = React.useState(0);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     fetch('http://34.204.114.72:8080/api/productos')
@@ -105,6 +107,16 @@ export default function ImgListOffer() {
                 flexShrink: 0,
                 overflow: 'hidden'
               }}
+              onClick={() => {
+                if (item.categoriaId && item.subCategoriaId) {
+                  navigate(`/products/${item.categoriaId}/${item.subCategoriaId}`);
+                } else if (item.categoriaId) {
+                  navigate(`/products/${item.categoriaId}/0`);
+                } else {
+                  // Opcional: navega a una ruta por defecto o muestra un error
+                  alert('Este producto no tiene categoría asignada');
+                }
+              }}
             >
               <CardMedia
                 component="img"
@@ -155,6 +167,11 @@ export default function ImgListOffer() {
                   title={item.marca}
                 >
                   {item.marca}
+                </Typography>
+              </CardContent>
+              <CardContent sx={{ textAlign: 'center', p: 1 }}>
+                <Typography variant="h6" component="div" color='red'>
+                  ${item.precioActual}
                 </Typography>
               </CardContent>
             </Card>
