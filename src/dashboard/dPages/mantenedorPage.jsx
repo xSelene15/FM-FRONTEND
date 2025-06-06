@@ -36,6 +36,8 @@ export default function MantenedorPage() {
   const [form, setForm] = useState(initialForm);
   const [editId, setEditId] = useState(null);
   const [search, setSearch] = useState('');
+  const [categorias, setCategorias] = useState([]);
+  const [subCategorias, setSubCategorias] = useState([]);
 
   // Obtener productos
   const fetchProductos = async () => {
@@ -46,6 +48,12 @@ export default function MantenedorPage() {
 
   useEffect(() => {
     fetchProductos();
+    fetch('http://34.204.114.72:8080/api/categorias')
+      .then(res => res.json())
+      .then(setCategorias);
+    fetch('http://34.204.114.72:8080/api/subcategorias')
+      .then(res => res.json())
+      .then(setSubCategorias);
   }, []);
 
   // Crear o editar producto
@@ -95,6 +103,16 @@ export default function MantenedorPage() {
     p.marca.toLowerCase().includes(search.toLowerCase()) ||
     p.descripcion.toLowerCase().includes(search.toLowerCase())
   );
+
+  // Funciones para obtener el nombre por ID
+  const getCategoriaNombre = (id) => {
+    const cat = categorias.find(c => c.id === id);
+    return cat ? cat.nombre : id;
+  };
+  const getSubCategoriaNombre = (id) => {
+    const sub = subCategorias.find(s => s.id === id);
+    return sub ? sub.nombre : id;
+  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -194,8 +212,8 @@ export default function MantenedorPage() {
                       <img src={p.imagenUrl} alt={p.nombre} width={50} style={{ borderRadius: 4 }} />
                     )}
                   </TableCell>
-                  <TableCell>{p.categoriaId}</TableCell>
-                  <TableCell>{p.subCategoriaId}</TableCell>
+                  <TableCell>{getCategoriaNombre(p.categoriaId)}</TableCell>
+                  <TableCell>{getSubCategoriaNombre(p.subCategoriaId)}</TableCell>
                   <TableCell>{p.precioActual}</TableCell>
                   <TableCell align="center">
                     <Stack direction="row" spacing={1} justifyContent="center">
