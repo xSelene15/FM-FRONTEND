@@ -1,96 +1,73 @@
 import * as React from 'react';
-import ImageList from '@mui/material/ImageList';
-import ImageListItem from '@mui/material/ImageListItem';
-import ImageListItemBar from '@mui/material/ImageListItemBar';
+import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 
 export default function ImgListOffer() {
+  const [productos, setProductos] = React.useState([]);
+
+  React.useEffect(() => {
+    fetch('http://34.204.114.72:8080/api/productos')
+      .then(res => res.json())
+      .then(data => {
+        const productosOferta = data.filter(item => item.oferta === true);
+        setProductos(productosOferta);
+      });
+  }, []);
+
   return (
-    <Card sx={{ p: 2, mb: 4 }}>
+    <Card
+      sx={{
+        p: 2,
+        mb: 4,
+        bgcolor: 'rgba(255,255,255,0.7)', // Fondo blanco translúcido
+        boxShadow: 3,
+        borderRadius: 2,
+        backdropFilter: 'blur(2px)' // Opcional: efecto de desenfoque detrás
+      }}
+    >
       <Typography variant="h5" component="h2" sx={{ mb: 2 }}>
-        Ofertas Especiales
+        Productos en Oferta
       </Typography>
-      <ImageList sx={{ width: 500, height: 450 }}>
-        {itemData.map((item) => (
-          <ImageListItem key={item.img}>
-            <img
-              srcSet={`${item.img}?w=248&fit=crop&auto=format&dpr=2 2x`}
-              src={`${item.img}?w=248&fit=crop&auto=format`}
-              alt={item.title}
-              loading="lazy"
-            />
-            <ImageListItemBar
-              title={item.title}
-              subtitle={<span>by: {item.author}</span>}
-              position="below"
-            />
-          </ImageListItem>
+      <Grid container spacing={2}>
+        {productos.map((item) => (
+          <Grid key={item.codProducto}>
+            <Card
+              sx={{
+                width: 220,
+                height: 300,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                margin: '0 auto'
+              }}
+            >
+              <CardMedia
+                component="img"
+                image={item.imagenUrl}
+                alt={item.nombre}
+                sx={{
+                  width: 150,
+                  height: 150,
+                  objectFit: 'cover',
+                  margin: '16px auto 0 auto',
+                  borderRadius: 2
+                }}
+              />
+              <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                <Typography variant="subtitle1" component="div" align="center">
+                  {item.nombre}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" align="center">
+                  {item.marca}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
         ))}
-      </ImageList>
+      </Grid>
     </Card>
   );
 }
-
-const itemData = [
-  {
-    img: 'https://images.unsplash.com/photo-1551963831-b3b1ca40c98e',
-    title: 'Breakfast',
-    author: '@bkristastucchio',
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
-    title: 'Burger',
-    author: '@rollelflex_graphy726',
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1522770179533-24471fcdba45',
-    title: 'Camera',
-    author: '@helloimnik',
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1444418776041-9c7e33cc5a9c',
-    title: 'Coffee',
-    author: '@nolanissac',
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1533827432537-70133748f5c8',
-    title: 'Hats',
-    author: '@hjrc33',
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62',
-    title: 'Honey',
-    author: '@arwinneil',
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1516802273409-68526ee1bdd6',
-    title: 'Basketball',
-    author: '@tjdragotta',
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1518756131217-31eb79b20e8f',
-    title: 'Fern',
-    author: '@katie_wasserman',
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1597645587822-e99fa5d45d25',
-    title: 'Mushrooms',
-    author: '@silverdalex',
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1567306301408-9b74779a11af',
-    title: 'Tomato basil',
-    author: '@shelleypauls',
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1471357674240-e1a485acb3e1',
-    title: 'Sea star',
-    author: '@peterlaster',
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1589118949245-7d38baf380d6',
-    title: 'Bike',
-    author: '@southside_customs',
-  },
-];

@@ -3,7 +3,9 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import ImgListOffer from '../components/listoffers.jsx';
 import ImgListNew from '../components/listnew.jsx';
-import { Card } from '@mui/material';
+
+
+
 
 export default function InicioPage() {
   return (
