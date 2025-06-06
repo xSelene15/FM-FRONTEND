@@ -8,6 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import Fade from '@mui/material/Fade';
+import { useLoader } from '../context/LoaderContext.jsx';
 
 const CARDS_PER_VIEW = 1; // Solo una card visible
 const AUTO_SCROLL_INTERVAL = 4000; // 4 segundos
@@ -16,15 +17,18 @@ export default function ImgListNew() {
   const [productos, setProductos] = React.useState([]);
   const [startIdx, setStartIdx] = React.useState(0);
   const [fadeIn, setFadeIn] = React.useState(true);
+  const { setLoading } = useLoader();
 
   React.useEffect(() => {
+    setLoading(true);
     fetch('http://34.204.114.72:8080/api/productos')
       .then(res => res.json())
       .then(data => {
         const productosNuevos = data.filter(item => item.nuevo === true);
         setProductos(productosNuevos);
-      });
-  }, []);
+      })
+      .finally(() => setLoading(false));
+  }, [setLoading]);
 
   // Avance automático con fade
   React.useEffect(() => {

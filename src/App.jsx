@@ -16,6 +16,9 @@ import InboxPage from './dashboard/dPages/InboxPage.jsx';
 import PedidosPage from './dashboard/dPages/pedidosPage.jsx';
 import MantenedorPage from './dashboard/dPages/mantenedorPage.jsx';
 import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import { useLoader } from './context/LoaderContext.jsx';
+import { useAuth } from './context/AuthContext.jsx';
 
 const MessagesContext = createContext();
 
@@ -43,6 +46,8 @@ function AppContent() {
   });
 
   const location = useLocation();
+  const { loading } = useLoader();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
@@ -71,10 +76,24 @@ function AppContent() {
 
   return (
     <>
+      {loading && (
+        <Box sx={{
+          position: 'fixed',
+          top: 0, left: 0, width: '100vw', height: '100vh',
+          bgcolor: 'rgba(255,255,255,0.5)',
+          zIndex: 2000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <CircularProgress size={80} />
+        </Box>
+      )}
+
       {!isDashboard && (
         <>
           <Box sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1100 }}>
-            <ResponsiveAppBar onCategoryClick={() => setShowCategoryList(true)} />
+            <ResponsiveAppBar user={user} onLogout={logout} onCategoryClick={() => setShowCategoryList(true)} />
             {showCategoryList && (
               <CategoriesList handleCloseListMenu={() => setShowCategoryList(false)} />
             )}

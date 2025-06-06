@@ -7,6 +7,7 @@ import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { useLoader } from '../context/LoaderContext.jsx';
 
 const CARDS_PER_VIEW = 5;
 const AUTO_SCROLL_INTERVAL = 10000; // 10 segundos
@@ -14,15 +15,18 @@ const AUTO_SCROLL_INTERVAL = 10000; // 10 segundos
 export default function ImgListOffer() {
   const [productos, setProductos] = React.useState([]);
   const [startIdx, setStartIdx] = React.useState(0);
+  const { setLoading } = useLoader();
 
   React.useEffect(() => {
+    setLoading(true);
     fetch('http://34.204.114.72:8080/api/productos')
       .then(res => res.json())
       .then(data => {
         const productosOferta = data.filter(item => item.oferta === true);
         setProductos(productosOferta);
-      });
-  }, []);
+      })
+      .finally(() => setLoading(false));
+  }, [setLoading]);
 
   // Avance automático
   React.useEffect(() => {

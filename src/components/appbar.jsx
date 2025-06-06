@@ -19,12 +19,10 @@ import { useNavigate } from 'react-router-dom';
 
 
 const pages = [
-    // { label: 'Categorias', path: '/categorias' },
     { label: 'Consultas', path: '/consultas' },
     { label: 'Registro', path: '/registro' },
     { label: 'Iniciar sesión', path: '/login' },
-    { label: 'Dashboard', path: '/dashboard' } // Asegúrate de que esta ruta esté definida en tu router
-
+    { label: 'Dashboard', path: '/dashboard' }
 ];
 
 const settings = ['Perfil', 'Cuenta', 'Dashboard', 'Cerrar sesión'];
@@ -37,6 +35,7 @@ function ResponsiveAppBar(props) {
     const [dolar, setDolar] = useState({ value: null, date: null });
 
     const navigate = useNavigate();
+    const user = props.user;
 
     useEffect(() => {
         fetch('http://34.204.114.72:8080/api/divisas/dolar')
@@ -157,22 +156,33 @@ function ResponsiveAppBar(props) {
                         FERREMAS
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-
                         <Button onClick={props.onCategoryClick}
                             sx={{ my: 2, color: 'white', display: 'block' }}
                         >
                             Categorias
                         </Button>
-
-                        {pages.map((page) => (
+                        {/* Si está logueado, muestra Consultas */}
+                        {user && (
                             <Button
-                                key={page.label}
-                                onClick={() => navigate(page.path)}
+                                key="Consultas"
+                                onClick={() => navigate('/consultas')}
                                 sx={{ my: 2, color: 'white', display: 'block' }}
                             >
-                                {page.label}
+                                Consultas
                             </Button>
-                        ))}
+                        )}
+                        {/* Si NO está logueado, muestra Registro */}
+                        {!user && pages
+                            .filter(p => p.label === 'Registro')
+                            .map((page) => (
+                                <Button
+                                    key={page.label}
+                                    onClick={() => navigate(page.path)}
+                                    sx={{ my: 2, color: 'white', display: 'block' }}
+                                >
+                                    {page.label}
+                                </Button>
+                            ))}
                     </Box>
                     {/* Dólar a la izquierda del carrito */}
                     {dolar.value && dolar.date && (
@@ -180,39 +190,55 @@ function ResponsiveAppBar(props) {
                             Precio Dólar al día {dolar.date}: ${dolar.value}
                         </Typography>
                     )}
-                    <Link to="/carrito/">
-                        <ShoppingCartIcon sx={{ fontSize: 30 , mr: 5 }}/>       
-                    </Link>
-
-                    <Box sx={{ flexGrow: 0 }}>
-                        <Tooltip title="Open settings">
-                            <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
-                            </IconButton>
-                        </Tooltip>
-                        <Menu
-                            sx={{ mt: '45px' }}
-                            id="menu-appbar"
-                            anchorEl={anchorElUser}
-                            anchorOrigin={{
-                                vertical: 'top',
-                                horizontal: 'right',
-                            }}
-                            keepMounted
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'right',
-                            }}
-                            open={Boolean(anchorElUser)}
-                            onClose={handleCloseUserMenu}
+                    {/* Carrito solo si hay usuario logueado */}
+                    {user && (
+                        <Link to="/carrito/">
+                            <ShoppingCartIcon sx={{ fontSize: 30 , mr: 3 }} />       
+                        </Link>
+                    )}
+                    {/* Iniciar sesión al final de la AppBar si NO está logueado */}
+                    {!user && (
+                        <Button
+                            key="Iniciar sesión"
+                            onClick={() => navigate('/login')}
+                            sx={{ my: 2, color: 'white', display: 'block', ml: 2 }}
                         >
-                            {settings.map((setting) => (
-                                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                                    <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
+                            Iniciar sesión
+                        </Button>
+                    )}
+                    {/* Avatar solo si hay usuario logueado */}
+                    {user && (
+                        <Box sx={{ flexGrow: 0 }}>
+                            <Tooltip title="Open settings">
+                                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                                    <Avatar alt={user.nombre || user.correo} src="/static/images/avatar/2.jpg" />
+                                </IconButton>
+                            </Tooltip>
+                            <Menu
+                                sx={{ mt: '45px' }}
+                                id="menu-appbar"
+                                anchorEl={anchorElUser}
+                                anchorOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'right',
+                                }}
+                                keepMounted
+                                transformOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'right',
+                                }}
+                                open={Boolean(anchorElUser)}
+                                onClose={handleCloseUserMenu}
+                            >
+                                <MenuItem onClick={handleCloseUserMenu}>
+                                    <Typography sx={{ textAlign: 'center' }}>Perfil</Typography>
                                 </MenuItem>
-                            ))}
-                        </Menu>
-                    </Box>
+                                <MenuItem onClick={() => { props.onLogout(); handleCloseUserMenu(); }}>
+                                    <Typography sx={{ textAlign: 'center' }}>Cerrar sesión</Typography>
+                                </MenuItem>
+                            </Menu>
+                        </Box>
+                    )}
                 </Toolbar>
             </Container>
         </AppBar>
