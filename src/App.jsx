@@ -1,5 +1,5 @@
 import { useState, useEffect, createContext, useContext } from 'react'
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import './App.css'
 import ResponsiveAppBar from './components/appbar.jsx';
 import CategoriesList from './components/categories.jsx';
@@ -9,12 +9,14 @@ import ConsultasPage from './pages/consultasPage.jsx';
 import RegistroPage from './pages/registrationPage.jsx';
 import ProductsPage from './pages/productsPage.jsx'
 import LoginPage from './pages/loginPage.jsx';
+import LoginAdmPage from './dashboard/dPages/loginAdmPage.jsx';
 import DashboardLayout from './dashboard/dashboardlayout.jsx';
 import DashboardPage from './dashboard/dPages/dashboardPage.jsx';
 import UsuariosPage from './dashboard/dPages/usuariosPage.jsx';
 import InboxPage from './dashboard/dPages/InboxPage.jsx';
 import PedidosPage from './dashboard/dPages/pedidosPage.jsx';
 import MantenedorPage from './dashboard/dPages/mantenedorPage.jsx';
+import CrearEmpleadoPage from './dashboard/dPages/crearEmpleadoPage.jsx';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useLoader } from './context/LoaderContext.jsx';
@@ -71,8 +73,21 @@ function AppContent() {
     setCart((prevCart) => prevCart.filter(item => item.codProducto !== codProducto));
   };
 
-  // Solo muestra la AppBar principal si NO estás en /dashboard
+  const isEmpleado = user?.tipo === 'empleado';
   const isDashboard = location.pathname.startsWith('/dashboard');
+
+  // Redirige a dashboard si es empleado y navega fuera del dashboard
+  if (isEmpleado && !isDashboard) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Redirige a login-empleado si NO es empleado y quiere acceder al dashboard
+  if (isDashboard && !isEmpleado) {
+    return <Navigate to="/login-empleado" replace />;
+  }
+
+  // Solo muestra la AppBar principal si NO estás en /dashboard
+  const showAppBar = !isDashboard;
 
   return (
     <>
@@ -90,7 +105,7 @@ function AppContent() {
         </Box>
       )}
 
-      {!isDashboard && (
+      {showAppBar && (
         <>
           <Box sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1100 }}>
             <ResponsiveAppBar user={user} onLogout={logout} onCategoryClick={() => setShowCategoryList(true)} />
@@ -106,19 +121,21 @@ function AppContent() {
       {/* El contenido de las páginas va debajo */}
       <Box sx={{ mt: !isDashboard ? '0px' : 0 }}>
         <Routes>
-          <Route path="/" element={<InicioPage />} />
-          <Route path="/products/:categoryId/:subcategoryId" element={<ProductsPage addToCart={addToCart} />} />
-          <Route path="/carrito" element={<CartPage cart={cart} setCart={setCart} removeFromCart={removeFromCart} />} />
-          <Route path="/consultas" element={<ConsultasPage />} />
-          <Route path="/registro" element={<RegistroPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/dashboard/*" element={<DashboardLayout />}>
-            <Route index element={<DashboardPage />} />
-            <Route path="usuarios" element={<UsuariosPage />} />
-            <Route path="inbox" element={<InboxPage />} />
-            <Route path="pedidos" element={<PedidosPage />} />
-            <Route path="productos" element={<MantenedorPage />} />
-          </Route>
+            <Route path="/" element={<InicioPage />} />
+            <Route path="/products/:categoryId/:subcategoryId" element={<ProductsPage addToCart={addToCart} />} />
+            <Route path="/carrito" element={<CartPage cart={cart} setCart={setCart} removeFromCart={removeFromCart} />} />
+            <Route path="/consultas" element={<ConsultasPage />} />
+            <Route path="/registro" element={<RegistroPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/login-empleado" element={<LoginAdmPage />} />
+            <Route path="/dashboard/*" element={<DashboardLayout />}>
+              <Route index element={<DashboardPage />} />
+              <Route path="usuarios" element={<UsuariosPage />} />
+              <Route path="usuarios/crear" element={<CrearEmpleadoPage />} />
+              <Route path="inbox" element={<InboxPage />} />
+              <Route path="pedidos" element={<PedidosPage />} />
+              <Route path="productos" element={<MantenedorPage />} />
+            </Route>
         </Routes>
       </Box>
     </>

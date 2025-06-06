@@ -1,4 +1,22 @@
 import React, { useEffect, useState } from 'react';
+import {
+  Box,
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Button,
+  IconButton,
+  Stack,
+  TextField,
+  Divider
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const API_URL = 'http://34.204.114.72:8080/api/productos';
 
@@ -17,7 +35,7 @@ export default function MantenedorPage() {
   const [productos, setProductos] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [editId, setEditId] = useState(null);
-  const [search, setSearch] = useState(''); // <-- Estado para el buscador
+  const [search, setSearch] = useState('');
 
   // Obtener productos
   const fetchProductos = async () => {
@@ -42,7 +60,6 @@ export default function MantenedorPage() {
       });
     } else {
       // Crear
-      console.log('Enviando producto:', form);
       await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,70 +97,129 @@ export default function MantenedorPage() {
   );
 
   return (
-    <div>
-      <h2>Mantenedor de Productos</h2>
-      {/* Buscador */}
-      <input
-        type="text"
-        placeholder="Buscar por nombre, marca o descripción"
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        style={{ marginBottom: 16, width: 300 }}
-      />
-      <form onSubmit={handleSubmit} style={{ marginBottom: 24 }}>
-        <input name="nombre" placeholder="Nombre" value={form.nombre} onChange={handleChange} required />
-        <input name="descripcion" placeholder="Descripción" value={form.descripcion} onChange={handleChange} required />
-        <input name="marca" placeholder="Marca" value={form.marca} onChange={handleChange} required />
-        <input name="stock" type="number" placeholder="Stock" value={form.stock} onChange={handleChange} required />
-        <input name="imagenUrl" placeholder="Imagen URL" value={form.imagenUrl} onChange={handleChange} />
-        <input name="categoriaId" type="number" placeholder="Categoría ID" value={form.categoriaId} onChange={handleChange} required />
-        <input name="subCategoriaId" type="number" placeholder="SubCategoría ID" value={form.subCategoriaId} onChange={handleChange} required />
-        <input
-          name="precioActual"
-          type="number"
-          placeholder="Precio"
-          value={form.precioActual}
-          onChange={handleChange}
-          required
-        />
-        <button type="submit">{editId ? 'Actualizar' : 'Crear'}</button>
-        {editId && <button type="button" onClick={() => { setForm(initialForm); setEditId(null); }}>Cancelar</button>}
-      </form>
-      <table border="1" cellPadding="8">
-        <thead>
-          <tr>
-            <th>Código Producto</th>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Marca</th>
-            <th>Stock</th>
-            <th>Imagen</th>
-            <th>Categoría</th>
-            <th>SubCategoría</th>
-            <th>Precio</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredProductos.map((p) => (
-            <tr key={p.id}>
-              <td>{p.codProducto}</td>
-              <td>{p.nombre}</td>
-              <td>{p.descripcion}</td>
-              <td>{p.marca}</td>
-              <td>{p.stock}</td>
-              <td><img src={p.imagenUrl} alt={p.nombre} width={50} /></td>
-              <td>{p.categoriaId}</td>
-              <td>{p.subCategoriaId}</td>
-              <td>{p.precioActual}</td>
-              <td>
-                <button onClick={() => handleEdit(p)}>Editar</button>
-                <button onClick={() => handleDelete(p.id)}>Eliminar</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Box sx={{ p: 3 }}>
+      <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+        <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
+          <Typography variant="h4" sx={{ mb: 3, fontWeight: 700, textAlign: 'center' }}>
+            Mantenedor de Productos
+          </Typography>
+          <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
+            Buscar producto por nombre, marca o descripción
+          </Typography>
+          <TextField
+            type="text"
+            placeholder="Buscar..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            sx={{ mb: 2, width: 300, background: 'white' }}
+          />
+          <Divider sx={{ mb: 2 }} />
+          <form
+            onSubmit={handleSubmit}
+            style={{
+              marginBottom: 0,
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 12,
+              maxWidth: 'auto'
+            }}
+          >
+            <TextField name="nombre" label="Nombre" value={form.nombre} onChange={handleChange} required sx={{ minWidth: 120, background: 'white' }} />
+            <TextField name="descripcion" label="Descripción" value={form.descripcion} onChange={handleChange} required sx={{ minWidth: 120, background: 'white' }} />
+            <TextField name="marca" label="Marca" value={form.marca} onChange={handleChange} required sx={{ minWidth: 100, background: 'white' }} />
+            <TextField name="stock" type="number" label="Stock" value={form.stock} onChange={handleChange} required sx={{ width: 70, background: 'white' }} />
+            <TextField name="imagenUrl" label="Imagen URL" value={form.imagenUrl} onChange={handleChange} sx={{ minWidth: 120, background: 'white' }} />
+            <TextField name="categoriaId" type="number" label="Categoría ID" value={form.categoriaId} onChange={handleChange} required sx={{ width: 90, background: 'white' }} />
+            <TextField name="subCategoriaId" type="number" label="SubCategoría ID" value={form.subCategoriaId} onChange={handleChange} required sx={{ width: 110, background: 'white' }} />
+            <TextField
+              name="precioActual"
+              type="number"
+              label="Precio"
+              value={form.precioActual}
+              onChange={handleChange}
+              required
+              sx={{ width: 90, background: 'white' }}
+            />
+            <Button type="submit" variant="contained" color="success" sx={{ height: 56 }}>
+              {editId ? 'Actualizar' : 'Crear'}
+            </Button>
+            {editId && (
+              <Button
+                type="button"
+                variant="outlined"
+                color="secondary"
+                sx={{ height: 56 }}
+                onClick={() => { setForm(initialForm); setEditId(null); }}
+              >
+                Cancelar
+              </Button>
+            )}
+          </form>
+        </Paper>
+        <TableContainer
+          component={Paper}
+          sx={{
+            maxWidth: 1200,
+            maxHeight: 427,
+            overflowY: 'auto',
+            boxShadow: '0 4px 16px 0 rgba(25, 118, 210, 0.15)',
+            border: '0.3px solid #000000'
+          }}
+        >
+          <Table stickyHeader>
+            <TableHead>
+              <TableRow>
+                <TableCell><b>Código Producto</b></TableCell>
+                <TableCell><b>Nombre</b></TableCell>
+                <TableCell><b>Descripción</b></TableCell>
+                <TableCell><b>Marca</b></TableCell>
+                <TableCell><b>Stock</b></TableCell>
+                <TableCell><b>Imagen</b></TableCell>
+                <TableCell><b>Categoría</b></TableCell>
+                <TableCell><b>SubCategoría</b></TableCell>
+                <TableCell><b>Precio</b></TableCell>
+                <TableCell align="center"><b>Acciones</b></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredProductos.map((p) => (
+                <TableRow key={p.id}>
+                  <TableCell>{p.codProducto}</TableCell>
+                  <TableCell>{p.nombre}</TableCell>
+                  <TableCell>{p.descripcion}</TableCell>
+                  <TableCell>{p.marca}</TableCell>
+                  <TableCell>{p.stock}</TableCell>
+                  <TableCell>
+                    {p.imagenUrl && (
+                      <img src={p.imagenUrl} alt={p.nombre} width={50} style={{ borderRadius: 4 }} />
+                    )}
+                  </TableCell>
+                  <TableCell>{p.categoriaId}</TableCell>
+                  <TableCell>{p.subCategoriaId}</TableCell>
+                  <TableCell>{p.precioActual}</TableCell>
+                  <TableCell align="center">
+                    <Stack direction="row" spacing={1} justifyContent="center">
+                      <IconButton color="primary" size="small" onClick={() => handleEdit(p)}>
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton color="error" size="small" onClick={() => handleDelete(p.id)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </Stack>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {filteredProductos.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={10} align="center">
+                    No hay productos registrados.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </Box>
   );
 }

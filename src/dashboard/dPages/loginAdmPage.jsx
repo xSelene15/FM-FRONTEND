@@ -1,30 +1,30 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography, Paper } from '@mui/material';
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../../context/AuthContext.jsx'; // Corrige el import si es necesario
 import { useNavigate } from 'react-router-dom';
-import { useMessages } from '../context/MessagesContext.jsx';
+import { useMessages } from '../../context/MessagesContext.jsx';
 
-export default function LoginPage() {
+export default function LoginAdmPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [mensaje, setMensaje] = useState('');
-  const { loginCliente } = useAuth();
+  const { loginEmpleado } = useAuth();
   const { addMessage } = useMessages();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMensaje('');
-    const res = await fetch('http://34.204.114.72:8080/api/clientes/login', {
+    const res = await fetch('http://34.204.114.72:8080/api/empleados/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ correo: email, password }),
     });
     if (res.ok) {
       const data = await res.json();
-      loginCliente(data);
+      loginEmpleado(data);
       addMessage('¡Inicio de sesión correcto!');
-      navigate('/');
+      navigate('/dashboard');
       return;
     }
     setMensaje('Credenciales incorrectas');
@@ -34,7 +34,7 @@ export default function LoginPage() {
     <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
       <Paper elevation={3} sx={{ p: 4, width: 350 }}>
         <Typography variant="h5" gutterBottom>
-          Iniciar Sesión
+          Iniciar Sesión Empleado
         </Typography>
         <form onSubmit={handleSubmit}>
           <TextField
