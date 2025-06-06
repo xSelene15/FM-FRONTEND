@@ -22,6 +22,14 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from 'react-router-dom';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import Slide from '@mui/material/Slide';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 const roles = [
   { value: 'VENDEDOR', label: 'Vendedor' },
@@ -36,6 +44,9 @@ export default function UsuariosPage() {
   const [editId, setEditId] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [sucursales, setSucursales] = useState([]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [usuarioToDelete, setUsuarioToDelete] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -78,7 +89,6 @@ export default function UsuariosPage() {
   };
 
   const handleAcceptEdit = async (id) => {
-    // Aquí puedes hacer el fetch para actualizar el usuario en la API si lo deseas
     const payload = {
       ...editForm,
       sucursal: { id: Number(editForm.sucursalId) }
@@ -95,6 +105,31 @@ export default function UsuariosPage() {
       .catch(() => setUsuarios([]));
     setEditId(null);
     setEditForm({});
+    setSnackbarOpen(true); // Mostrar toast
+  };
+
+  const handleDeleteClick = (usuario) => {
+    setUsuarioToDelete(usuario);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setUsuarioToDelete(null);
+  };
+
+  const handleDeleteAccept = async () => {
+    if (!usuarioToDelete) return;
+    await fetch(`http://34.204.114.72:8080/api/empleados/${usuarioToDelete.id}`, {
+      method: 'DELETE',
+    });
+    // Refresca la lista
+    fetch('http://34.204.114.72:8080/api/empleados')
+      .then(res => res.json())
+      .then(data => setUsuarios(data))
+      .catch(() => setUsuarios([]));
+    setDeleteDialogOpen(false);
+    setUsuarioToDelete(null);
   };
 
   return (
@@ -262,7 +297,7 @@ export default function UsuariosPage() {
                           <IconButton color="primary" size="small" onClick={() => handleEditClick(usuario)}>
                             <EditIcon />
                           </IconButton>
-                          <IconButton color="error" size="small">
+                          <IconButton color="error" size="small" onClick={() => handleDeleteClick(usuario)}>
                             <DeleteIcon />
                           </IconButton>
                         </Stack>
@@ -282,6 +317,82 @@ export default function UsuariosPage() {
           </TableContainer>
         </Paper>
       </Box>
+      {/* Modal de confirmación de eliminación */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        TransitionComponent={Slide}
+        TransitionProps={{ direction: 'up' }}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: 'warning.light',
+            color: 'warning.contrastText',
+            borderRadius: 4,
+            border: '3px solid #ff9800',
+            boxShadow: '0 8px 32px 0 rgba(255, 152, 0, 0.25)',
+            textAlign: 'center',
+          }
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', fontWeight: 700 }}>
+          <WarningAmberIcon sx={{ fontSize: 60, color: 'warning.dark', mb: 1 }} />
+          ¿Está seguro que desea eliminar este usuario?
+        </DialogTitle>
+        <DialogContent>
+          {usuarioToDelete && (
+            <Box sx={{ my: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                {usuarioToDelete.nombreCompleto}
+              </Typography>
+              <Typography variant="body1">
+                RUT: <b>{usuarioToDelete.rut}</b>
+              </Typography>
+              <Typography variant="body1">
+                Correo: <b>{usuarioToDelete.correo}</b>
+              </Typography>
+              <Typography variant="body1">
+                Rol: <b>{usuarioToDelete.rol}</b>
+              </Typography>
+              <Typography variant="body1">
+                Sucursal: <b>{usuarioToDelete.sucursal ? `${usuarioToDelete.sucursal.nombre} (${usuarioToDelete.sucursal.ciudad})` : 'Sin sucursal'}</b>
+              </Typography>
+            </Box>
+          )}
+          <Typography variant="body2" sx={{ color: 'warning.dark', mt: 2 }}>
+            Esta acción no se puede deshacer.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleDeleteAccept}
+            sx={{ fontWeight: 700, px: 4, py: 1.5, fontSize: '1.1em' }}
+          >
+            Aceptar
+          </Button>
+          <Button
+            variant="outlined"
+            color="inherit"
+            onClick={handleDeleteCancel}
+            sx={{ fontWeight: 700, px: 4, py: 1.5, fontSize: '1.1em', ml: 2 }}
+          >
+            Cancelar
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={2500}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
+          Usuario modificado correctamente
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
