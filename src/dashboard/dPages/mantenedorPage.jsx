@@ -13,10 +13,14 @@ import {
   IconButton,
   Stack,
   TextField,
-  Divider
+  Divider,
+  Checkbox,
+  FormControlLabel,
+  Snackbar
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import MenuItem from '@mui/material/MenuItem';
 
 const API_URL = 'http://34.204.114.72:8080/api/productos';
 
@@ -27,8 +31,9 @@ const initialForm = {
   stock: 0,
   imagenUrl: '',
   categoriaId: 0,
-  subCategoriaId: 0,
-  precioActual: 0,
+  subCategoriaId: '',
+  precio: 0,
+  oferta: false, // <-- nuevo campo
 };
 
 export default function MantenedorPage() {
@@ -38,6 +43,10 @@ export default function MantenedorPage() {
   const [search, setSearch] = useState('');
   const [categorias, setCategorias] = useState([]);
   const [subCategorias, setSubCategorias] = useState([]);
+  const [subCatDisabled, setSubCatDisabled] = useState(true);
+  const [stockError, setStockError] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
+  const [toastOpen, setToastOpen] = useState(false);
 
   // Obtener productos
   const fetchProductos = async () => {
@@ -48,31 +57,66 @@ export default function MantenedorPage() {
 
   useEffect(() => {
     fetchProductos();
+  }, []);
+
+  useEffect(() => {
     fetch('http://34.204.114.72:8080/api/categorias')
       .then(res => res.json())
-      .then(setCategorias);
-    fetch('http://34.204.114.72:8080/api/subcategorias')
-      .then(res => res.json())
-      .then(setSubCategorias);
+      .then(data => {
+        setCategorias(data);
+        if (data.length > 0) {
+          setForm(f => ({ ...f, categoriaId: data[0].id }));
+        }
+      });
   }, []);
+
+  useEffect(() => {
+    if (form.categoriaId && Number(form.categoriaId) !== 0) {
+      fetch(`http://34.204.114.72:8080/api/subcategorias/categoria/${form.categoriaId}`)
+        .then(res => res.json())
+        .then(data => {
+          setSubCategorias(data);
+          setSubCatDisabled(!data || data.length === 0);
+          setForm(f => ({
+            ...f,
+            subCategoriaId: (!data || data.length === 0) ? '' : data[0].id // <--- string vacío si no hay subcats
+          }));
+        });
+    } else {
+      setSubCategorias([]);
+      setSubCatDisabled(true);
+      setForm(f => ({ ...f, subCategoriaId: '' })); // <--- string vacío
+    }
+  }, [form.categoriaId]);
 
   // Crear o editar producto
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const payload = {
+      ...form,
+      categoriaId: Number(form.categoriaId),
+      subCategoriaId: form.subCategoriaId === '' ? null : Number(form.subCategoriaId),
+      stock: Number(form.stock),
+      precio: Number(form.precio),
+    };
+
     if (editId) {
-      // Editar
-      await fetch(`${API_URL}/${editId}`, {
-        method: 'PUT',
+      await fetch(`${API_URL}/codigo/${payload.codProducto}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
+      setToastMsg('Producto editado con éxito');
+      setToastOpen(true);
     } else {
-      // Crear
       await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
+      setToastMsg('Producto creado con éxito');
+      setToastOpen(true);
     }
     setForm(initialForm);
     setEditId(null);
@@ -87,14 +131,25 @@ export default function MantenedorPage() {
 
   // Editar producto (cargar en formulario)
   const handleEdit = (producto) => {
-    setForm(producto);
+    setForm({
+      ...producto,
+      precio: producto.precio, // usa solo precio
+    });
     setEditId(producto.id);
   };
 
   // Manejar cambios en el formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+    if (name === "stock") {
+      const num = Number(value);
+      setStockError(num < 0);
+      setForm({ ...form, stock: num < 0 ? 0 : num });
+    } else if (name === "categoriaId") {
+      setForm({ ...form, categoriaId: value, subCategoriaId: '' });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
   // Filtrar productos por nombre, marca o descripción
@@ -113,7 +168,6 @@ export default function MantenedorPage() {
     const sub = subCategorias.find(s => s.id === id);
     return sub ? sub.nombre : id;
   };
-
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
@@ -121,17 +175,6 @@ export default function MantenedorPage() {
           <Typography variant="h4" sx={{ mb: 3, fontWeight: 700, textAlign: 'center' }}>
             Mantenedor de Productos
           </Typography>
-          <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
-            Buscar producto por nombre, marca o descripción
-          </Typography>
-          <TextField
-            type="text"
-            placeholder="Buscar..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            sx={{ mb: 2, width: 300, background: 'white' }}
-          />
-          <Divider sx={{ mb: 2 }} />
           <form
             onSubmit={handleSubmit}
             style={{
@@ -145,18 +188,76 @@ export default function MantenedorPage() {
             <TextField name="nombre" label="Nombre" value={form.nombre} onChange={handleChange} required sx={{ minWidth: 120, background: 'white' }} />
             <TextField name="descripcion" label="Descripción" value={form.descripcion} onChange={handleChange} required sx={{ minWidth: 120, background: 'white' }} />
             <TextField name="marca" label="Marca" value={form.marca} onChange={handleChange} required sx={{ minWidth: 100, background: 'white' }} />
-            <TextField name="stock" type="number" label="Stock" value={form.stock} onChange={handleChange} required sx={{ width: 70, background: 'white' }} />
-            <TextField name="imagenUrl" label="Imagen URL" value={form.imagenUrl} onChange={handleChange} sx={{ minWidth: 120, background: 'white' }} />
-            <TextField name="categoriaId" type="number" label="Categoría ID" value={form.categoriaId} onChange={handleChange} required sx={{ width: 90, background: 'white' }} />
-            <TextField name="subCategoriaId" type="number" label="SubCategoría ID" value={form.subCategoriaId} onChange={handleChange} required sx={{ width: 110, background: 'white' }} />
             <TextField
-              name="precioActual"
+              name="stock"
+              type="number"
+              label="Stock"
+              value={form.stock}
+              onChange={handleChange}
+              required
+              sx={{ width: 70, background: 'white' }}
+              inputProps={{ min: 0 }}
+              error={stockError}
+              helperText={stockError ? "El stock no puede ser menor a 0" : ""}
+            />
+            <TextField name="imagenUrl" label="Imagen URL" value={form.imagenUrl} onChange={handleChange} sx={{ minWidth: 120, background: 'white' }} />
+            <TextField
+              select
+              name="categoriaId"
+              label="Categoría"
+              value={form.categoriaId}
+              onChange={handleChange}
+              required
+              sx={{ width: 150, background: 'white' }}
+            >
+              <MenuItem value={0} disabled>Seleccione una categoría</MenuItem>
+              {categorias.map((cat) => (
+                <MenuItem key={cat.id} value={cat.id}>
+                  {cat.nombre}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              name="subCategoriaId"
+              label="SubCategoría"
+              value={form.subCategoriaId}
+              onChange={handleChange}
+              required
+              sx={{ width: 150, background: 'white' }}
+              disabled={subCatDisabled}
+            >
+              <MenuItem value="" disabled>
+                {subCatDisabled
+                  ? 'No hay subcategorías'
+                  : 'Seleccione una subcategoría'}
+              </MenuItem>
+              {subCategorias.map((sub) => (
+                <MenuItem key={sub.id} value={sub.id}>
+                  {sub.nombre}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              name="precio"
               type="number"
               label="Precio"
-              value={form.precioActual}
+              value={form.precio}
               onChange={handleChange}
               required
               sx={{ width: 90, background: 'white' }}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={form.oferta}
+                  onChange={e => setForm({ ...form, oferta: e.target.checked })}
+                  name="oferta"
+                  color="primary"
+                />
+              }
+              label="Oferta"
+              sx={{ alignSelf: 'center' }}
             />
             <Button type="submit" variant="contained" color="success" sx={{ height: 56 }}>
               {editId ? 'Actualizar' : 'Crear'}
@@ -167,40 +268,70 @@ export default function MantenedorPage() {
                 variant="outlined"
                 color="secondary"
                 sx={{ height: 56 }}
-                onClick={() => { setForm(initialForm); setEditId(null); }}
+                onClick={() => {
+                  setForm(f => ({
+                    ...initialForm,
+                    categoriaId: categorias.length > 0 ? categorias[0].id : 0,
+                    subCategoriaId: '',
+                  }));
+                  setEditId(null);
+                  if (categorias.length > 0) {
+                    fetch(`http://34.204.114.72:8080/api/subcategorias/categoria/${categorias[0].id}`)
+                      .then(res => res.json())
+                      .then(data => {
+                        setSubCategorias(data);
+                        setSubCatDisabled(!data || data.length === 0);
+                      });
+                  } else {
+                    setSubCategorias([]);
+                    setSubCatDisabled(true);
+                  }
+                }}
               >
                 Cancelar
               </Button>
             )}
           </form>
+
         </Paper>
-        <TableContainer
-          component={Paper}
-          sx={{
-            maxWidth: 1200,
-            maxHeight: 427,
-            overflowY: 'auto',
-            boxShadow: '0 4px 16px 0 rgba(25, 118, 210, 0.15)',
-            border: '0.3px solid #000000'
-          }}
-        >
-          <Table stickyHeader>
-            <TableHead>
-              <TableRow>
-                <TableCell><b>Código Producto</b></TableCell>
-                <TableCell><b>Nombre</b></TableCell>
-                <TableCell><b>Descripción</b></TableCell>
-                <TableCell><b>Marca</b></TableCell>
-                <TableCell><b>Stock</b></TableCell>
-                <TableCell><b>Imagen</b></TableCell>
-                <TableCell><b>Categoría</b></TableCell>
-                <TableCell><b>SubCategoría</b></TableCell>
-                <TableCell><b>Precio</b></TableCell>
-                <TableCell align="center"><b>Acciones</b></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredProductos.map((p) => (
+        <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
+          <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
+            Buscar producto por nombre, marca o descripción
+          </Typography>
+          <TextField
+            type="text"
+            placeholder="Buscar..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            sx={{ mb: 2, width: 300, background: 'white' }}
+          />
+          <Divider sx={{ mb: 2 }} />
+          <TableContainer
+            component={Paper}
+            sx={{
+              maxWidth: 1200,
+              maxHeight: 427,
+              overflowY: 'auto',
+              boxShadow: '0 4px 16px 0 rgba(25, 118, 210, 0.15)',
+            }}
+          >
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell><b>Código Producto</b></TableCell>
+                  <TableCell><b>Nombre</b></TableCell>
+                  <TableCell><b>Descripción</b></TableCell>
+                  <TableCell><b>Marca</b></TableCell>
+                  <TableCell><b>Stock</b></TableCell>
+                  <TableCell><b>Imagen</b></TableCell>
+                  <TableCell><b>Categoría</b></TableCell>
+                  <TableCell><b>SubCategoría</b></TableCell>
+                  <TableCell><b>Precio</b></TableCell>
+                  <TableCell><b>Oferta</b></TableCell>
+                  <TableCell align="center"><b>Acciones</b></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>{filteredProductos.map((p) => (
                 <TableRow key={p.id}>
                   <TableCell>{p.codProducto}</TableCell>
                   <TableCell>{p.nombre}</TableCell>
@@ -208,13 +339,13 @@ export default function MantenedorPage() {
                   <TableCell>{p.marca}</TableCell>
                   <TableCell>{p.stock}</TableCell>
                   <TableCell>
-                    {p.imagenUrl && (
-                      <img src={p.imagenUrl} alt={p.nombre} width={50} style={{ borderRadius: 4 }} />
-                    )}
+                    {p.imagenUrl &&
+                      (<img src={p.imagenUrl} alt={p.nombre} width={50} style={{ borderRadius: 4 }} />)}
                   </TableCell>
                   <TableCell>{getCategoriaNombre(p.categoriaId)}</TableCell>
                   <TableCell>{getSubCategoriaNombre(p.subCategoriaId)}</TableCell>
                   <TableCell>{p.precioActual}</TableCell>
+                  <TableCell>{p.oferta ? 'Sí' : 'No'}</TableCell>
                   <TableCell align="center">
                     <Stack direction="row" spacing={1} justifyContent="center">
                       <IconButton color="primary" size="small" onClick={() => handleEdit(p)}>
@@ -227,16 +358,21 @@ export default function MantenedorPage() {
                   </TableCell>
                 </TableRow>
               ))}
-              {filteredProductos.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={10} align="center">
-                    No hay productos registrados.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                {filteredProductos.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={11} align="center">No hay productos registrados.</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+        <Snackbar
+          open={toastOpen}
+          autoHideDuration={3000}
+          onClose={() => setToastOpen(false)}
+          message={toastMsg}
+        />
       </Box>
     </Box>
   );
