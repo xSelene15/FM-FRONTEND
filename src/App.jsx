@@ -13,7 +13,7 @@ import LoginAdmPage from './dashboard/dPages/loginAdmPage.jsx';
 import DashboardLayout from './dashboard/dashboardlayout.jsx';
 import DashboardPage from './dashboard/dPages/dashboardPage.jsx';
 import UsuariosPage from './dashboard/dPages/usuariosPage.jsx';
-import InboxPage from './dashboard/dPages/InboxPage.jsx';
+import InboxPage from './dashboard/dPages/inboxPage.jsx';
 import PedidosPage from './dashboard/dPages/pedidosPage.jsx';
 import MantenedorPage from './dashboard/dPages/mantenedorPage.jsx';
 import CrearEmpleadoPage from './dashboard/dPages/crearEmpleadoPage.jsx';

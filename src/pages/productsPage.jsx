@@ -16,7 +16,11 @@ export default function ProductsPage({ addToCart }) {
     }
     fetch(url)
       .then((response) => response.json())
-      .then((data) => setProducts(data))
+      .then((data) => {
+        console.log('Fetched products:', data);
+        const activos = Array.isArray(data) ? data.filter(p => p.activo) : [];
+        setProducts(activos);
+      })
       .catch((error) => console.error('Error fetching products:', error));
   }, [subcategoryId, categoryId]);
 

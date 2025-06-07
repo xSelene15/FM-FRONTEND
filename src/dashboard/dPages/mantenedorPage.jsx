@@ -16,11 +16,18 @@ import {
   Divider,
   Checkbox,
   FormControlLabel,
-  Snackbar
+  Snackbar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MenuItem from '@mui/material/MenuItem';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import Slide from '@mui/material/Slide';
 
 const API_URL = 'http://34.204.114.72:8080/api/productos';
 
@@ -43,10 +50,13 @@ export default function MantenedorPage() {
   const [search, setSearch] = useState('');
   const [categorias, setCategorias] = useState([]);
   const [subCategorias, setSubCategorias] = useState([]);
+  const [allSubCategorias, setAllSubCategorias] = useState([]);
   const [subCatDisabled, setSubCatDisabled] = useState(true);
   const [stockError, setStockError] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
   const [toastOpen, setToastOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [productoToDelete, setProductoToDelete] = useState(null);
 
   // Obtener productos
   const fetchProductos = async () => {
@@ -54,7 +64,7 @@ export default function MantenedorPage() {
     const data = await res.json();
     setProductos(data);
   };
-
+  
   useEffect(() => {
     fetchProductos();
   }, []);
@@ -68,6 +78,12 @@ export default function MantenedorPage() {
           setForm(f => ({ ...f, categoriaId: data[0].id }));
         }
       });
+  }, []);
+
+    useEffect(() => {
+    fetch('http://34.204.114.72:8080/api/subcategorias')
+      .then(res => res.json())
+      .then(data => setAllSubCategorias(data));
   }, []);
 
   useEffect(() => {
@@ -88,21 +104,25 @@ export default function MantenedorPage() {
       setForm(f => ({ ...f, subCategoriaId: '' })); // <--- string vacío
     }
   }, [form.categoriaId]);
-
   // Crear o editar producto
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Solo los campos requeridos por el endpoint
     const payload = {
-      ...form,
+      nombre: form.nombre,
+      descripcion: form.descripcion,
+      marca: form.marca,
+      stock: Number(form.stock),
+      imagenUrl: form.imagenUrl,
+      oferta: form.oferta,
       categoriaId: Number(form.categoriaId),
       subCategoriaId: form.subCategoriaId === '' ? null : Number(form.subCategoriaId),
-      stock: Number(form.stock),
       precio: Number(form.precio),
     };
 
     if (editId) {
-      await fetch(`${API_URL}/codigo/${payload.codProducto}`, {
+      await fetch(`${API_URL}/codigo/${form.codProducto}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -125,7 +145,7 @@ export default function MantenedorPage() {
 
   // Eliminar producto
   const handleDelete = async (id) => {
-    await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+    await fetch(`${API_URL}/codigo/${payload.codProducto}`, { method: 'DELETE' });
     fetchProductos();
   };
 
@@ -133,7 +153,7 @@ export default function MantenedorPage() {
   const handleEdit = (producto) => {
     setForm({
       ...producto,
-      precio: producto.precio, // usa solo precio
+      precio: producto.precioActual ?? producto.precio ?? 0, // Muestra el precio actual si existe
     });
     setEditId(producto.id);
   };
@@ -165,9 +185,27 @@ export default function MantenedorPage() {
     return cat ? cat.nombre : id;
   };
   const getSubCategoriaNombre = (id) => {
-    const sub = subCategorias.find(s => s.id === id);
+    const sub = allSubCategorias.find(s => s.id === id);
     return sub ? sub.nombre : id;
   };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setProductoToDelete(null);
+  };
+
+  const handleDeleteAccept = async () => {
+    if (!productoToDelete) return;
+    await fetch(`${API_URL}/codigo/${productoToDelete.codProducto}`, {
+      method: 'DELETE',
+    });
+    fetchProductos();
+    setDeleteDialogOpen(false);
+    setProductoToDelete(null);
+    setToastMsg('Producto eliminado correctamente');
+    setToastOpen(true);
+  };
+
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
@@ -259,7 +297,11 @@ export default function MantenedorPage() {
               label="Oferta"
               sx={{ alignSelf: 'center' }}
             />
-            <Button type="submit" variant="contained" color="success" sx={{ height: 56 }}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="success" sx={{ height: 56 }}
+            >
               {editId ? 'Actualizar' : 'Crear'}
             </Button>
             {editId && (
@@ -268,25 +310,6 @@ export default function MantenedorPage() {
                 variant="outlined"
                 color="secondary"
                 sx={{ height: 56 }}
-                onClick={() => {
-                  setForm(f => ({
-                    ...initialForm,
-                    categoriaId: categorias.length > 0 ? categorias[0].id : 0,
-                    subCategoriaId: '',
-                  }));
-                  setEditId(null);
-                  if (categorias.length > 0) {
-                    fetch(`http://34.204.114.72:8080/api/subcategorias/categoria/${categorias[0].id}`)
-                      .then(res => res.json())
-                      .then(data => {
-                        setSubCategorias(data);
-                        setSubCatDisabled(!data || data.length === 0);
-                      });
-                  } else {
-                    setSubCategorias([]);
-                    setSubCatDisabled(true);
-                  }
-                }}
               >
                 Cancelar
               </Button>
@@ -351,7 +374,10 @@ export default function MantenedorPage() {
                       <IconButton color="primary" size="small" onClick={() => handleEdit(p)}>
                         <EditIcon />
                       </IconButton>
-                      <IconButton color="error" size="small" onClick={() => handleDelete(p.id)}>
+                      <IconButton color="error" size="small" onClick={() => {
+                        setProductoToDelete(p);
+                        setDeleteDialogOpen(true);
+                      }}>
                         <DeleteIcon />
                       </IconButton>
                     </Stack>
@@ -373,6 +399,71 @@ export default function MantenedorPage() {
           onClose={() => setToastOpen(false)}
           message={toastMsg}
         />
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={handleDeleteCancel}
+          TransitionComponent={Slide}
+          TransitionProps={{ direction: 'up' }}
+          maxWidth="xs"
+          fullWidth
+          PaperProps={{
+            sx: {
+              bgcolor: 'warning.light',
+              color: 'warning.contrastText',
+              borderRadius: 4,
+              border: '3px solid #ff9800',
+              boxShadow: '0 8px 32px 0 rgba(255, 152, 0, 0.25)',
+              textAlign: 'center',
+            }
+          }}
+        >
+          <DialogTitle sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', fontWeight: 700 }}>
+            <WarningAmberIcon sx={{ fontSize: 60, color: 'warning.dark', mb: 1 }} />
+            ¿Está seguro que desea eliminar este producto?
+          </DialogTitle>
+          <DialogContent>
+            {productoToDelete && (
+              <Box sx={{ my: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  {productoToDelete.nombre}
+                </Typography>
+                <Typography variant="body1">
+                  Código: <b>{productoToDelete.codProducto}</b>
+                </Typography>
+                <Typography variant="body1">
+                  Marca: <b>{productoToDelete.marca}</b>
+                </Typography>
+                <Typography variant="body1">
+                  Categoría: <b>{getCategoriaNombre(productoToDelete.categoriaId)}</b>
+                </Typography>
+                <Typography variant="body1">
+                  SubCategoría: <b>{getSubCategoriaNombre(productoToDelete.subCategoriaId)}</b>
+                </Typography>
+              </Box>
+            )}
+            <Typography variant="body2" sx={{ color: 'warning.dark', mt: 2 }}>
+              Esta acción no se puede deshacer.
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={handleDeleteAccept}
+              sx={{ fontWeight: 700, px: 4, py: 1.5, fontSize: '1.1em' }}
+            >
+              Aceptar
+            </Button>
+            <Button
+              variant="outlined"
+              color="inherit"
+              onClick={handleDeleteCancel}
+              sx={{ fontWeight: 700, px: 4, py: 1.5, fontSize: '1.1em', ml: 2 }}
+            >
+              Cancelar
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </Box>
   );

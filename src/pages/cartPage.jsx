@@ -4,6 +4,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
 
 export default function CartPage({ cart, setCart, removeFromCart }) {
   const total = cart.reduce((sum, item) => sum + Number(item.precioActual) * (item.cantidad || 1), 0);
@@ -14,16 +15,15 @@ export default function CartPage({ cart, setCart, removeFromCart }) {
   // Función para descontar stock en la API
   const descontarStockAPI = async () => {
     try {
-      // Por cada producto en el carrito, envía una petición para descontar el stock
       for (const product of cart) {
-        await fetch(`http://http://34.204.114.72:8080//productos/${product.codProducto}/descontar-stock`, {
-          method: 'POST',
+        // PATCH para descontar stock
+        await fetch(`http://34.204.114.72:8080/api/productos/codigo/${product.codProducto}/stock`, {
+          method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ stock: product.stock - (product.cantidad || 1) })
+          body: JSON.stringify({ stock: product.stock - (product.cantidad) })
         });
       }
     } catch (error) {
-      // Puedes mostrar un mensaje de error si lo deseas
       console.error('Error al descontar stock:', error);
     }
   };
@@ -34,10 +34,22 @@ export default function CartPage({ cart, setCart, removeFromCart }) {
     if (params.get('token_ws')) {
       setShowSuccess(true);
       descontarStockAPI(); // Descontar stock al pagar
-      // Aquí podrías limpiar el carrito si quieres
-      // localStorage.removeItem('cart');
-      // setCart([]);
+      setCart([]); // Limpiar carrito al pagar exitosamente
+
+      // Enviar email de confirmación de compra
+      fetch('http://34.204.114.72:8080/api/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: 'rodr.amigo@duocuc.cl', // Reemplaza por el email real del cliente si lo tienes
+          subject: 'Compra realizada con éxito',
+          body: 'Gracias por su compra. Su pedido ha sido procesado correctamente.'
+        }),
+      });
+
+      // localStorage.removeItem('cart'); // Si usas localStorage, descomenta esta línea
     }
+    // eslint-disable-next-line
   }, [setCart]);
 
   // Unifica productos con el mismo codProducto sumando cantidades
@@ -141,98 +153,106 @@ export default function CartPage({ cart, setCart, removeFromCart }) {
   const hasOutOfStock = cart.some(product => product.stock === 0);
 
   return (
-    <Box>
-      {showSuccess && (
-        <Box sx={{ mb: 2, p: 2, bgcolor: 'success.light', color: 'success.contrastText', borderRadius: 2 }}>
-          ¡Pago realizado con éxito!
-        </Box>
-      )}
-      <List>
-        {cart.length === 0 ? (
-          <ListItem>
-            <ListItemText primary="El carrito está vacío." />
-          </ListItem>
-        ) : (
-          cart.map((product, idx) => (
-            <ListItem
-              key={product.codProducto || idx}
-              secondaryAction={
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={() => removeFromCart(product.codProducto)}
+    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f5f5f5' }}>
+      <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 600, mx: 'auto' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Box sx={{ mb: 3 }}>
+            <h2 style={{ margin: 0, fontWeight: 700, textAlign: 'center' }}>Carrito</h2>
+          </Box>
+          {showSuccess && (
+            <Box sx={{ mb: 2, p: 2, bgcolor: 'success.light', color: 'success.contrastText', borderRadius: 2 }}>
+              ¡Pago realizado con éxito!
+              En breve recibirás un correo de confirmación.
+            </Box>
+          )}
+          <List sx={{ width: '100%' }}>
+            {cart.length === 0 ? (
+              <ListItem>
+                <ListItemText primary="El carrito está vacío." />
+              </ListItem>
+            ) : (
+              cart.map((product, idx) => (
+                <ListItem
+                  key={product.codProducto || idx}
+                  secondaryAction={
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={() => removeFromCart(product.codProducto)}
+                    >
+                      Quitar
+                    </Button>
+                  }
+                  sx={{ borderBottom: '1px solid #eee' }}
                 >
-                  Quitar
-                </Button>
-              }
-              sx={{ borderBottom: '1px solid #eee' }}
-            >
-              <img
-                src={product.imagenUrl}
-                alt={product.nombre}
-                style={{ width: 50, height: 50, objectFit: 'cover', marginRight: 16 }}
-              />
-              <ListItemText
-                primary={product.nombre}
-                secondary={
-                  <span>
-                    Precio: ${product.precioActual} | Marca: {product.marca}
-                    <br />
-                    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => handleDecrease(product.codProducto)}
-                        disabled={product.cantidad <= 1}
-                      >-</Button>
-                      <span style={{ minWidth: 30, textAlign: 'center' }}>{product.cantidad || 1}</span>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => handleIncrease(product.codProducto)}
-                        disabled={product.cantidad >= product.stock || product.stock === 0}
-                      >+</Button>
-                      <span style={{ marginLeft: 8, color: product.stock === 0 ? 'red' : '#888' }}>
-                        Stock: {product.stock - (product.cantidad || 1)}
-                        {product.stock === 0 && ' (Sin stock)'}
+                  <img
+                    src={product.imagenUrl}
+                    alt={product.nombre}
+                    style={{ width: 50, height: 50, objectFit: 'cover', marginRight: 16 }}
+                  />
+                  <ListItemText
+                    primary={product.nombre}
+                    secondary={
+                      <span>
+                        Precio: ${product.precioActual} | Marca: {product.marca}
+                        <br />
+                        <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => handleDecrease(product.codProducto)}
+                            disabled={product.cantidad <= 1}
+                          >-</Button>
+                          <span style={{ minWidth: 30, textAlign: 'center' }}>{product.cantidad || 1}</span>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => handleIncrease(product.codProducto)}
+                            disabled={product.cantidad >= product.stock || product.stock === 0}
+                          >+</Button>
+                          <span style={{ marginLeft: 8, color: product.stock === 0 ? 'red' : '#888' }}>
+                            Stock: {product.stock - (product.cantidad || 1)}
+                            {product.stock === 0 && ' (Sin stock)'}
+                          </span>
+                        </Box>
                       </span>
-                    </Box>
-                  </span>
-                }
-              />
-            </ListItem>
-          ))
-        )}
-      </List>
-      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-        <input
-          type="text"
-          value={`Total: $${total.toFixed(2)}`}
-          readOnly
-          style={{ fontSize: '1.2em', padding: '0.5em', width: '200px', textAlign: 'right' }}
-        />
-        <Button
-          variant="contained"
-          color="success"
-          sx={{ fontSize: '1.1em', height: '48px' }}
-          onClick={handleWebPay}
-          disabled={loading || cart.length === 0 || hasOutOfStock}
-        >
-          {loading ? 'Redirigiendo...' : 'Pagar con WebPay'}
-        </Button>
-      </Box>
-      {hasOutOfStock && (
-        <Box sx={{ mt: 2, color: 'error.main', textAlign: 'right' }}>
-          Hay productos sin stock en el carrito. Elimina o ajusta antes de pagar.
+                    }
+                  />
+                </ListItem>
+              ))
+            )}
+          </List>
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 2, width: '100%' }}>
+            <input
+              type="text"
+              value={`Total: $${total.toFixed(2)}`}
+              readOnly
+              style={{ fontSize: '1.2em', padding: '0.5em', width: '200px', textAlign: 'right' }}
+            />
+            <Button
+              variant="contained"
+              color="success"
+              sx={{ fontSize: '1.1em', height: '48px' }}
+              onClick={handleWebPay}
+              disabled={loading || cart.length === 0 || hasOutOfStock}
+            >
+              {loading ? 'Redirigiendo...' : 'Pagar con WebPay'}
+            </Button>
+          </Box>
+          {hasOutOfStock && (
+            <Box sx={{ mt: 2, color: 'error.main', textAlign: 'right', width: '100%' }}>
+              Hay productos sin stock en el carrito. Elimina o ajusta antes de pagar.
+            </Box>
+          )}
+          {webpayData && (
+            <Box sx={{ mt: 2, color: 'error.main', width: '100%' }}>
+              {typeof webpayData === 'string'
+                ? webpayData
+                : <pre>{JSON.stringify(webpayData, null, 2)}</pre>}
+            </Box>
+          )}
         </Box>
-      )}
-      {webpayData && (
-        <Box sx={{ mt: 2, color: 'error.main' }}>
-          {typeof webpayData === 'string'
-            ? webpayData
-            : <pre>{JSON.stringify(webpayData, null, 2)}</pre>}
-        </Box>
-      )}
+      </Paper>
     </Box>
   );
 }

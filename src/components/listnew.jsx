@@ -25,7 +25,8 @@ export default function ImgListNew() {
     setLoading(true);
     fetch('http://34.204.114.72:8080/api/productos')
       .then(res => res.json())
-      .then(data => {
+      .then(data => 
+        {
         const productosNuevos = data.filter(item => item.nuevo === true);
         setProductos(productosNuevos);
       })

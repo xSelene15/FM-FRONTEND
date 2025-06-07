@@ -20,12 +20,7 @@ import { useNavigate } from 'react-router-dom';
 
 const pages = [
     { label: 'Consultas', path: '/consultas' },
-    { label: 'Registro', path: '/registro' },
-    { label: 'Iniciar sesión', path: '/login' },
-    { label: 'Dashboard', path: '/dashboard' }
 ];
-
-const settings = ['Perfil', 'Cuenta', 'Dashboard', 'Cerrar sesión'];
 
 function ResponsiveAppBar(props) {
     const [anchorElNav, setAnchorElNav] = React.useState(null);
