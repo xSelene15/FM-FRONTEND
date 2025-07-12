@@ -12,6 +12,65 @@ export default function CartPage({ cart, setCart, removeFromCart }) {
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
+  // Función para obtener el ID del cliente por correo
+  const obtenerClienteIdPorCorreo = async (correo) => {
+    try {
+      const response = await fetch(`http://34.204.114.72:8080/api/clientes/correo/${correo}`);
+      if (response.ok) {
+        const cliente = await response.json();
+        return cliente.id;
+      } else {
+        console.error('Cliente no encontrado');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error al obtener cliente:', error);
+      return null;
+    }
+  };
+
+  // Función para crear el pedido en la BD
+  const crearPedidoAPI = async () => {
+    try {
+      // Obtener el correo del usuario logueado
+      const correoUsuario = JSON.parse(localStorage.getItem('user')).correo;
+      
+      // Obtener el ID del cliente usando el correo
+      const clienteId = await obtenerClienteIdPorCorreo(correoUsuario);
+          
+      if (!clienteId) {
+        console.error('No se pudo obtener el ID del cliente');
+        return;
+      }
+
+      const pedidoData = {
+        clienteId: clienteId,
+        items: cart.map(product => ({
+          codProducto: product.codProducto,
+          cantidad: product.cantidad || 1
+        }))
+      };
+
+      console.log('Creando pedido:', pedidoData);
+
+      const response = await fetch('http://34.204.114.72:8080/api/pedidos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pedidoData)
+      });
+
+      if (response.ok) {
+        const pedidoCreado = await response.json();
+        console.log('Pedido creado exitosamente:', pedidoCreado);
+        return pedidoCreado;
+      } else {
+        console.error('Error al crear el pedido:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error al crear el pedido:', error);
+    }
+  };
+
   // Función para descontar stock en la API
   const descontarStockAPI = async () => {
     try {
@@ -33,18 +92,22 @@ export default function CartPage({ cart, setCart, removeFromCart }) {
     const params = new URLSearchParams(window.location.search);
     if (params.get('token_ws')) {
       setShowSuccess(true);
-      descontarStockAPI(); // Descontar stock al pagar
-      setCart([]); // Limpiar carrito al pagar exitosamente
+      
+      // Crear el pedido primero, luego descontar stock
+      crearPedidoAPI().then(() => {
+        descontarStockAPI(); // Descontar stock al pagar
+        setCart([]); // Limpiar carrito al pagar exitosamente
 
-      // Enviar email de confirmación de compra
-      fetch('http://34.204.114.72:8080/api/email/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: 'rodr.amigo@duocuc.cl', // Reemplaza por el email real del cliente si lo tienes
-          subject: 'Compra realizada con éxito',
-          body: 'Gracias por su compra. Su pedido ha sido procesado correctamente.'
-        }),
+        // Enviar email de confirmación de compra
+        fetch('http://34.204.114.72:8080/api/email/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: 'rodr.amigo@duocuc.cl', // Reemplaza por el email real del cliente si lo tienes
+            subject: 'Compra realizada con éxito',
+            body: 'Gracias por su compra. Su pedido ha sido procesado correctamente.'
+          }),
+        });
       });
 
       // localStorage.removeItem('cart'); // Si usas localStorage, descomenta esta línea
@@ -161,7 +224,7 @@ export default function CartPage({ cart, setCart, removeFromCart }) {
           </Box>
           {showSuccess && (
             <Box sx={{ mb: 2, p: 2, bgcolor: 'success.light', color: 'success.contrastText', borderRadius: 2 }}>
-              ¡Pago realizado con éxito!
+              ¡Pago realizado con éxito! Tu pedido ha sido registrado.
               En breve recibirás un correo de confirmación.
             </Box>
           )}

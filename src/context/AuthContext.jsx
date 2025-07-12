@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
 
   const loginCliente = (data) => {
     const userData = { tipo: 'cliente', ...data };
-    setUser(userData);
+    setUser(userData); 
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
