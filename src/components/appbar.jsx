@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 
 const pages = [
     { label: 'Consultas', path: '/consultas' },
+    { label: 'Registro', path: '/registro' },
 ];
 
 function ResponsiveAppBar(props) {
@@ -162,7 +163,7 @@ function ResponsiveAppBar(props) {
                             Categorias
                         </Button>
                         {/* Si está logueado, muestra Consultas */}
-                        {user && (
+
                             <Button
                                 key="Consultas"
                                 onClick={() => navigate('/consultas')}
@@ -170,7 +171,7 @@ function ResponsiveAppBar(props) {
                             >
                                 Consultas
                             </Button>
-                        )}
+
                         {/* Si NO está logueado, muestra Registro */}
                         {!user && pages
                             .filter(p => p.label === 'Registro')
