@@ -25,9 +25,22 @@ export default function ImgListNew() {
     setLoading(true);
     fetch('http://34.204.114.72:8080/api/productos')
       .then(res => res.json())
-      .then(data => 
-        {
-        const productosNuevos = data.filter(item => item.nuevo === true);
+      .then(data => {
+        // Primero intenta filtrar por productos nuevos
+        let productosNuevos = data.filter(item => item.nuevo === true);
+        
+        // Si no hay productos nuevos, usa los más recientes por ID
+        if (productosNuevos.length === 0) {
+          productosNuevos = data
+            .filter(item => item.activo !== false) // Filtrar productos activos
+            .sort((a, b) => b.id - a.id) // Ordenar por ID descendente
+            .slice(0, 10); // Los 10 más recientes
+          
+          console.log('No hay productos marcados como nuevos, mostrando los más recientes:', productosNuevos.length);
+        } else {
+          console.log('Productos nuevos encontrados:', productosNuevos.length);
+        }
+        
         setProductos(productosNuevos);
       })
       .finally(() => setLoading(false));
