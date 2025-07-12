@@ -65,6 +65,137 @@ export default function InboxPage() {
     }
   };
 
+  // Función para obtener los datos completos de una consulta por ID
+  const fetchConsultaById = async (consultaId) => {
+    try {
+      const response = await fetch(`http://34.204.114.72:8080/api/consultas/${consultaId}`);
+      if (!response.ok) {
+        throw new Error('Error al obtener los datos de la consulta');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al obtener consulta por ID:', error);
+      throw error;
+    }
+  };
+
+  const generateEmailHTML = (consulta, respuesta) => {
+    return `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Respuesta a su consulta - FERREMAS</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #040b4b 0%, #67aad6 100%); min-height: 100vh;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: white; box-shadow: 0 4px 16px rgba(0,0,0,0.1);">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #040b4b 0%, #67aad6 100%); padding: 30px; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold; letter-spacing: 2px;">
+                    🔧 FERREMAS
+                </h1>
+                <p style="color: white; margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">
+                    Su ferretería de confianza
+                </p>
+            </div>
+            
+            <!-- Content -->
+            <div style="padding: 40px 30px;">
+                <h2 style="color: #040b4b; margin: 0 0 20px 0; font-size: 24px;">
+                    Respuesta a su consulta
+                </h2>
+                
+                <div style="background-color: #f8f9fa; border-left: 4px solid #67aad6; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0;">
+                    <h3 style="color: #040b4b; margin: 0 0 10px 0; font-size: 18px;">
+                        Detalles de su consulta:
+                    </h3>
+                    <p style="margin: 5px 0; color: #333;"><strong>ID de consulta:</strong> ${consulta.id}</p>
+                    <p style="margin: 5px 0; color: #333;"><strong>Título:</strong> ${consulta.mensaje}</p>
+                    <p style="margin: 5px 0; color: #333;"><strong>Su mensaje:</strong></p>
+                    <p style="margin: 10px 0; color: #555; font-style: italic; background: white; padding: 15px; border-radius: 5px;">
+                        "${consulta.mensajeCliente}"
+                    </p>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #040b4b 0%, #67aad6 100%); color: white; padding: 25px; border-radius: 8px; margin: 25px 0;">
+                    <h3 style="margin: 0 0 15px 0; font-size: 20px;">
+                        📝 Nuestra respuesta:
+                    </h3>
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 6px; border-left: 4px solid white;">
+                        <p style="margin: 0; font-size: 16px; line-height: 1.6;">
+                            ${respuesta}
+                        </p>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <p style="color: #555; margin: 0 0 15px 0;">
+                        ¿Necesita más ayuda? No dude en contactarnos nuevamente.
+                    </p>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <p style="margin: 5px 0; color: #333;"><strong>📧 Email:</strong> contacto@ferremas.cl</p>
+                        <p style="margin: 5px 0; color: #333;"><strong>📞 Teléfono:</strong> +56 2 1234 5678</p>
+                        <p style="margin: 5px 0; color: #333;"><strong>🕒 Horario:</strong> Lunes a Viernes 9:00 - 18:00</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div style="background-color: #040b4b; color: white; padding: 25px; text-align: center;">
+                <p style="margin: 0 0 10px 0; font-size: 16px; font-weight: bold;">
+                    Gracias por confiar en FERREMAS
+                </p>
+                <p style="margin: 0; font-size: 14px; opacity: 0.8;">
+                    Su consulta ha sido marcada como resuelta. Este correo fue generado automáticamente.
+                </p>
+                <div style="margin: 15px 0 0 0; padding: 15px 0; border-top: 1px solid rgba(255,255,255,0.2);">
+                    <p style="margin: 0; font-size: 12px; opacity: 0.7;">
+                        © ${new Date().getFullYear()} FERREMAS - Todos los derechos reservados
+                    </p>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+  };
+
+  const sendEmailToClient = async (consultaId, respuesta) => {
+    try {
+      // 1. Obtener los datos completos de la consulta por ID
+      const consultaCompleta = await fetchConsultaById(consultaId);
+      
+      // 2. Usar el campo 'correo' del response
+      const emailData = {
+        to: consultaCompleta.correo,
+        subject: `Respuesta a su consulta con id: ${consultaCompleta.id}`,
+        body: generateEmailHTML(consultaCompleta, respuesta)
+      };
+
+      console.log('Enviando email a:', consultaCompleta.correo);
+
+      const response = await fetch('http://34.204.114.72:8080/api/email/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(emailData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al enviar el email');
+      }
+
+      console.log('Email enviado exitosamente al cliente:', consultaCompleta.correo);
+    } catch (error) {
+      console.error('Error al enviar email:', error);
+      // Relanzar el error para que pueda ser manejado por la función que llama
+      throw error;
+    }
+  };
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -105,6 +236,7 @@ export default function InboxPage() {
 
     setLoading(true);
     try {
+      // 1. Enviar respuesta a la API
       const response = await fetch(`http://34.204.114.72:8080/api/consultas/${selectedConsulta.id}/respuesta`, {
         method: 'PATCH',
         headers: {
@@ -119,9 +251,12 @@ export default function InboxPage() {
         throw new Error('Error al enviar la respuesta');
       }
 
+      // 2. Enviar email al cliente usando el ID de la consulta
+      await sendEmailToClient(selectedConsulta.id, respuestaVendedor.trim());
+
       setSnackbar({
         open: true,
-        message: 'Respuesta enviada exitosamente. Consulta marcada como resuelta.',
+        message: 'Respuesta enviada exitosamente. Se ha enviado un email al cliente.',
         severity: 'success'
       });
 
@@ -129,9 +264,16 @@ export default function InboxPage() {
       handleCloseDialog();
     } catch (error) {
       console.error('Error:', error);
+      let errorMessage = 'Error al enviar la respuesta. Intente nuevamente.';
+      
+      // Si el error es específicamente del email, personalizar el mensaje
+      if (error.message.includes('email')) {
+        errorMessage = 'Respuesta guardada, pero hubo un error al enviar el email al cliente.';
+      }
+      
       setSnackbar({
         open: true,
-        message: 'Error al enviar la respuesta. Intente nuevamente.',
+        message: errorMessage,
         severity: 'error'
       });
     } finally {
@@ -140,17 +282,18 @@ export default function InboxPage() {
   };
 
   const handleMarkAsResolved = async (consulta) => {
-    // Como solo tienes el endpoint para responder, podrías enviar una respuesta automática
-    // o eliminar esta función si no es necesaria
     setLoading(true);
     try {
+      const respuestaAutomatica = 'Consulta procesada y resuelta.';
+      
+      // 1. Marcar como resuelto
       const response = await fetch(`http://34.204.114.72:8080/api/consultas/${consulta.id}/respuesta`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          respuestaVendedor: 'Consulta procesada y resuelta.'
+          respuestaVendedor: respuestaAutomatica
         }),
       });
 
@@ -158,18 +301,28 @@ export default function InboxPage() {
         throw new Error('Error al marcar como resuelto');
       }
 
+      // 2. Enviar email al cliente usando el ID de la consulta
+      await sendEmailToClient(consulta.id, respuestaAutomatica);
+
       setSnackbar({
         open: true,
-        message: 'Consulta marcada como resuelta',
+        message: 'Consulta marcada como resuelta. Se ha enviado un email al cliente.',
         severity: 'success'
       });
 
       fetchConsultas();
     } catch (error) {
       console.error('Error:', error);
+      let errorMessage = 'Error al marcar como resuelta';
+      
+      // Si el error es específicamente del email, personalizar el mensaje
+      if (error.message.includes('email')) {
+        errorMessage = 'Consulta marcada como resuelta, pero hubo un error al enviar el email al cliente.';
+      }
+      
       setSnackbar({
         open: true,
-        message: 'Error al marcar como resuelta',
+        message: errorMessage,
         severity: 'error'
       });
     } finally {
@@ -336,8 +489,8 @@ export default function InboxPage() {
                     variant="outlined"
                     required
                   />
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-                    Al enviar la respuesta, la consulta se marcará automáticamente como resuelta.
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                    Al enviar la respuesta, la consulta se marcará automáticamente como resuelta y se enviará un email al cliente.
                   </Typography>
                 </Box>
               )}
