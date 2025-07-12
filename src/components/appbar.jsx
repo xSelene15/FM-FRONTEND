@@ -36,12 +36,17 @@ function ResponsiveAppBar(props) {
         fetch('http://34.204.114.72:8080/api/divisas/dolar')
             .then(res => res.json())
             .then(data => {
-                const obs = data?.Series?.Obs?.[0];
-                if (obs) {
+                const obs = data?.Series?.Obs?.[0]; 
+                if (obs.value) {
                     setDolar({ value: obs.value, date: obs.indexDateString });
                 }
+                else {
+                    const today = new Date();
+                    const defaultDate = today.toISOString().split('T')[0];
+                    setDolar({ value: 950, date: defaultDate });
+                }
             })
-            .catch(() => setDolar({ value: null, date: null }));
+            .catch(() => setDolar({ value: 950, date: new Date().toISOString().split('T')[0] }));
     }, []);
 
     const handleOpenNavMenu = (event) => {
